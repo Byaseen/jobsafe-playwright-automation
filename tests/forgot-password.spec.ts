@@ -51,4 +51,14 @@ test.describe('Forgot password flow', () => {
         await page.getByRole('banner').getByRole('button').click();
         await expect(page.locator('div').filter({ hasText: 'Need help? - Contact usFor' })).toBeVisible();
     });
+
+    test('Change passowrd button is working in forget password thankyou page', async ({ page }) => {
+        await page.getByPlaceholder('Email').fill('test@test.com');
+        await page.getByRole('button', { name: 'Next' }).click();
+        await expect(page).toHaveURL(/.*check-email-exists/);
+        await page.getByRole('button', { name: 'Change Password' }).click();
+        await expect(page).toHaveURL(/.*change-password/);
+
+    });
+
 });
