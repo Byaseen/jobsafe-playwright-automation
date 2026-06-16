@@ -51,5 +51,4 @@ test.describe('Forgot password flow', () => {
         await page.getByRole('banner').getByRole('button').click();
         await expect(page.locator('div').filter({ hasText: 'Need help? - Contact usFor' })).toBeVisible();
     });
-
 });
