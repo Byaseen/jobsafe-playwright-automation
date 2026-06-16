@@ -1,0 +1,44 @@
+{
+  "name": "jobsafe-mobile-poc",
+  "version": "1.0.0",
+  "description": "JobSafe QA: Playwright (mobile web) + MobileWright (native APK/IPA)",
+  "scripts": {
+    "auth:setup": "npx ts-node -e \"require('./tests/auth.setup').default()\"",
+    "codegen:iphone": "playwright codegen https://app.tst.jobsafe.cloud/login -o tests/recorded-iphone.spec.ts --device=\"iPhone 15\" --save-storage=storageState.json",
+    "codegen:android": "playwright codegen https://app.tst.jobsafe.cloud/login -o tests/recorded-android.spec.ts --device=\"Pixel 5\" --save-storage=storageState.json",
+    "record:step": "playwright test tests/record-one-step.spec.ts --project=\"iPhone 15\" --headed --timeout=0",
+    "test": "npm run test:web",
+    "test:web": "playwright test --headed --workers=1",
+    "test:web:iphone": "playwright test --project=\"iPhone 15\" --headed --workers=1",
+    "test:web:android": "playwright test --project=\"Android Mobile\" --headed --workers=1",
+    "test:demo": "playwright test tests/incident-report.spec.ts --headed --workers=1 --project=\"iPhone 15\"",
+    "test:form": "playwright test tests/form-demo.spec.ts --headed --workers=1 --project=\"iPhone 15\"",
+    "report": "npx playwright show-report",
+    "native:doctor": "mobilewright doctor",
+    "native:devices": "mobilewright devices",
+    "native:fetch-sample": "node scripts/fetch-sample-apk.mjs",
+    "native:test": "mobilewright test",
+    "native:test:sample": "npm run native:fetch-sample && mobilewright test -c mobilewright.config.ts --project sample-android --reporter=list",
+    "native:test:sample:full": "npm run native:fetch-sample && set NATIVE_FULL=1&& mobilewright test -c mobilewright.config.ts --project sample-android --reporter=list",
+    "native:test:sample:full:extended": "npm run native:fetch-sample && set NATIVE_FULL=1&& set NATIVE_EXTENDED=1&& mobilewright test -c mobilewright.config.ts --project sample-android --reporter=list",
+    "native:test:sample:watch": "npm run native:fetch-sample && set NATIVE_DEMO=1&& set NATIVE_FULL=1&& mobilewright test -c mobilewright.config.ts --project sample-android --reporter=list",
+    "native:test:jobsafe": "mobilewright test --project jobsafe-android",
+    "native:report": "mobilewright show-report",
+    "test:all": "npm run test:web && npm run native:test:sample"
+  },
+  "overrides": {
+    "@playwright/test": "1.58.2",
+    "playwright": "1.58.2",
+    "playwright-core": "1.58.2"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.58.2",
+    "dotenv": "^17.4.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.2"
+  },
+  "dependencies": {
+    "@mobilewright/test": "^0.0.38",
+    "mobilewright": "^0.0.38"
+  }
+}

@@ -1,0 +1,7 @@
+node_modules/
+test-results/
+playwright-report/
+mobilewright-report/
+apps/
+storageState.json
+.env
