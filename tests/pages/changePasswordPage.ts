@@ -18,13 +18,13 @@ export class ChangePasswordPage {
     this.backButton = page.getByRole('button', { name: 'back' });
     this.pageTitle = page.getByText('Reset your password');
     this.heading = page.getByRole('heading', { name: 'Enter your new password below:' });
-    this.codeInput = page.getByRole('spinbutton', { name: 'Code :' });
+    this.codeInput =  page.getByPlaceholder('Code')
     this.newPasswordInput = page.getByPlaceholder('Choose a password').nth(0);
-    this.confirmPasswordInput = page.getByPlaceholder('Choose a password').nth(1);
+    this.confirmPasswordInput = page.locator('app-form-control-wrapper').filter({ hasText: 'Confirm Password :' }).locator('label');
     this.resetNowButton = page.getByRole('button', { name: 'Reset Now' });
     this.contactSupportLink = page.getByText('Still need help? - Contact us');
     this.requestAnotherCodeLink = page.getByText(/Request another code/i);
-    this.invalidCodeError = page.getByText(/invalid code|wrong code|expired code|code is incorrect|code expired/i);
+    this.invalidCodeError = page.getByText(/the code that you have used is invalid|expired code|code is incorrect|code expired/i);
   }
 
   async goto() {

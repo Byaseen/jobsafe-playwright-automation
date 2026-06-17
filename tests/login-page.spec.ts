@@ -41,22 +41,27 @@ test.describe('Login page', () => {
     await expect(page).toHaveURL(/app\/home/);
     await expect(page.locator('#job_tabs')).toBeVisible({ timeout: 20000 });
   });
-});
 
-test('empty submit shows validation errors', async ({ page }) => {
+  test('empty submit shows validation errors', async ({ page }) => {
     await page.getByPlaceholder('Email').click();
     await page.getByPlaceholder('Choose a password').click();
     await page.keyboard.press('Tab');
     await expect(page.getByText('Email is required!', { exact: true })).toBeVisible();
     await expect(page.getByText('Password is required!', { exact: true })).toBeVisible();
-});
+  });
 
-test('forgot password link navigates to forgot password page', async ({ page }) => {
-    await page.getByRole('link', { name: 'Forgot Password?' }).click();
-    await expect(page).toHaveURL(/.*forgot-password/);
-});
+  test('forgot password link navigates to forgot password page', async ({ page }) => {
+      await page.getByRole('link', { name: 'Forgot Password?' }).click();
+      await expect(page).toHaveURL(/.*forgot-password/);
+  });
 
-test('Need help contact us modal working when clicking on the ? icon', async ({ page }) => {
-    await page.getByRole('banner').getByRole('button').click();
-    await expect(page.locator('div').filter({ hasText: 'Need help? - Contact usFor' })).toBeVisible();
+  test('Need help contact us modal working when clicking on the ? icon', async ({ page }) => {
+      await page.getByRole('banner').getByRole('button').click();
+      await expect(page.locator('div').filter({ hasText: 'Need help? - Contact usFor' })).toBeVisible();
+  });
+
+  test('No Account? Create an account button navigates to registration page', async ({ page }) => {      await page.getByRole('button', { name: 'No Account? Create an account' }).click();
+      await page.getByRole('button', { name: 'No Account? Create an account' }).click();
+      await expect(page).toHaveURL(/.*signup/);
+  });
 });

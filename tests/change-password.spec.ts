@@ -22,7 +22,7 @@ test.describe('Change Password flow', () => {
     const changePage = new ChangePasswordPage(page);
     await changePage.goto();
 
-    await changePage.fillCode('123456');
+    await changePage.codeInput.pressSequentially('123456', { delay: 100 });
     await expect(changePage.codeInput).toHaveValue('123456');
 
     await changePage.fillNewPassword(newPassword);
@@ -91,11 +91,9 @@ test.describe('Change Password flow', () => {
   test('Verify "Still need help? - Contact us" link', async ({ page }) => {
     const changePage = new ChangePasswordPage(page);
     await changePage.goto();
-
     await expect(changePage.contactSupportLink).toBeVisible();
     await changePage.clickContactSupport();
-
-    await expect(page.locator(/Need help\? - Contact us|support@jobsafe\.cloud|0333 8000 883/i)).toBeVisible();
+    await expect(page.locator('div').filter({ hasText: 'Need help? - Contact usFor' })).toBeVisible();
   });
 
   test('Verify Reset the password', async ({ page }) => {
