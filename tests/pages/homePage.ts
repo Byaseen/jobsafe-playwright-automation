@@ -28,6 +28,9 @@ export class HomePage {
     await expect(this.page.getByText('Incidents this week', { exact: true })).toBeVisible();
     await expect(this.page.getByText('Days since last Report', { exact: true })).toBeVisible();
     await expect(this.page.getByRole('heading', { name: 'Live Feed' })).toBeVisible();
+    await expect(this.page.getByRole('heading', { name: 'By category' })).toBeVisible();
+    await expect(this.page.getByRole('heading', { name: 'Site breakdown' })).toBeVisible();
+    await expect(this.page.getByRole('heading', { name: '-week trend' })).toBeVisible();
   }
 
   async expectNavigationButtons() {
