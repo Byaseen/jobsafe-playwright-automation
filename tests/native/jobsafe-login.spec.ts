@@ -63,4 +63,5 @@ test.describe('JobSafe native — login', () => {
     await screen.getByText(/Forgot password\?/i).tap();
     await expect(screen.getByText(/Simply provide us with your Email/i)).toBeVisible({ timeout: 10_000 });
   });
+
 });
