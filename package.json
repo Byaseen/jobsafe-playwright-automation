@@ -39,6 +39,7 @@
   },
   "dependencies": {
     "@mobilewright/test": "^0.0.38",
+    "mobilecli": "^0.3.85",
     "mobilewright": "^0.0.38"
   }
 }

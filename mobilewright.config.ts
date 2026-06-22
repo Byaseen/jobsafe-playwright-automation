@@ -36,7 +36,7 @@ if (jobsafePackage) {
   const use: MobilewrightUseOptions = {
     platform: 'android',
     deviceName: androidDevice,
-    bundleId: jobsafePackage,
+    bundleId: "cloud.jobsafe.jobsafeapp",
   };
   if (jobsafeApk) use.installApps = jobsafeApk;
 
@@ -50,9 +50,9 @@ if (jobsafePackage) {
 if (iosBundle) {
   const use: MobilewrightUseOptions = {
     platform: 'ios',
-    deviceName: /iPhone 17/,
-    bundleId: iosBundle,
-    installApps: process.env.IOS_APP_PATH,
+    deviceName: /Ideveloper’s iPhone/,
+    bundleId: "cloud.jobsafe.jobsafeapp",
+    // installApps: process.env.IOS_APP_PATH,
   };
 
   projects.push({
