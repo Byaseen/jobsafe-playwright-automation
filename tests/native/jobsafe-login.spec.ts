@@ -23,7 +23,6 @@ test.describe('JobSafe native — login', () => {
   test.beforeEach(async ({ device, bundleId }) => {
     // bundleId is guaranteed set here: the describe-level test.skip bails out
     // when no native app is configured.
-    await device.launchApp(bundleId!);
   });
 
   // Runs first on purpose: a successful login persists the session across

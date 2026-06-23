@@ -4,6 +4,7 @@
 import { test, expect } from '@mobilewright/test';
 import { nativeEnv } from '../../utils/native-env';
 import { expectNeedHelpModal } from './utils/shared-assertions';
+import { dismissKeyboard } from './utils/keyboard';
 
 const hasNativeApp = Boolean(nativeEnv.androidPackage || nativeEnv.iosBundle);
 const invalidCreds = {
@@ -23,7 +24,6 @@ test.describe('JobSafe native — Reset Password', () => {
     test.beforeEach(async ({ device, bundleId, screen }) => {
         // bundleId is guaranteed set here: the describe-level test.skip bails
         // out when no native app is configured.
-        await device.launchApp(bundleId!);
         await screen.getByText(/Forgot password\?/i).tap();
         await expect(screen.getByText(/Simply provide us with your Email/i)).toBeVisible({ timeout: 10_000 });
         await screen.getByPlaceholder('Email').fill(nativeEnv.email);
@@ -47,9 +47,14 @@ test.describe('JobSafe native — Reset Password', () => {
     });
 
     test('Test if fields are required and shows validation error', async ({ screen }) => {
+        // Dismiss the keyboard after focusing each field so its raised state
+        // doesn't cover (and intercept the tap on) the next field / button below.
         await screen.getByPlaceholder("Code").tap();
+        await dismissKeyboard(screen);
         await screen.getByPlaceholder("Choose a password").first().tap();
+        await dismissKeyboard(screen);
         await screen.getByPlaceholder("Choose a password").nth(1).tap();
+        await dismissKeyboard(screen);
         await screen.getByRole('button', { name: 'Reset Now' }).tap();
         await expect(screen.getByText(/Code is required!/i)).toBeVisible({ timeout: 10_000 });
         await expect(screen.getByText(/Password is required!/i)).toHaveCount(2, { timeout: 10_000 });
@@ -57,6 +62,7 @@ test.describe('JobSafe native — Reset Password', () => {
 
     test('Test password fields validation and shows validation error when entered not valid passwrod', async ({ screen }) => {
         await screen.getByPlaceholder("Choose a password").first().fill("123");
+        await dismissKeyboard(screen);
         await expect(screen.getByText(/Must contain at least 1 number!/i)).toBeVisible({ timeout: 10_000 });
         await expect(screen.getByText(/Must contain at least 1 in Capital Case!/i)).toBeVisible({ timeout: 10_000 });
         await expect(screen.getByText(/Must contain at least 1 letter in Small Case!/i)).toBeVisible({ timeout: 10_000 });
@@ -66,6 +72,7 @@ test.describe('JobSafe native — Reset Password', () => {
 
     test('Test Passowrd field validation when entered valid password and shows no validation errors', async ({ screen }) => {
         await screen.getByPlaceholder("Choose a password").first().fill(nativeEnv.password);
+        await dismissKeyboard(screen);
         await expect(screen.getByText(/Must contain at least 1 number!/i)).not.toBeVisible({ timeout: 10_000 });
         await expect(screen.getByText(/Must contain at least 1 in Capital Case!/i)).not.toBeVisible({ timeout: 10_000 });
         await expect(screen.getByText(/Must contain at least 1 letter in Small Case!/i)).not.toBeVisible({ timeout: 10_000 });
@@ -75,13 +82,17 @@ test.describe('JobSafe native — Reset Password', () => {
 
     test('Test Confirm Passowrd field validation when entered valid password and shows no validation errors', async ({ screen }) => {
         await screen.getByPlaceholder("Choose a password").first().fill(nativeEnv.password);
+        await dismissKeyboard(screen);
         await screen.getByPlaceholder("Choose a password").nth(1).fill(nativeEnv.password);
+        await dismissKeyboard(screen);
         await expect(screen.getByText(/Password confirmation does not match/i)).not.toBeVisible({ timeout: 10_000 });
     });
 
     test('Test Confirm Passowrd field validation when entered mismatched passwords and shows validation errors', async ({ screen }) => {
         await screen.getByPlaceholder("Choose a password").first().fill(nativeEnv.password);
+        await dismissKeyboard(screen);
         await screen.getByPlaceholder("Choose a password").nth(1).fill(invalidCreds.password);
+        await dismissKeyboard(screen);
         await expect(screen.getByText(/Password confirmation does not match/i)).toBeVisible({ timeout: 10_000 });
     });
 });

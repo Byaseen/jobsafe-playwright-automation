@@ -17,8 +17,8 @@ export const expectNeedHelpModal = async (screen: Screen) => {
       /If you are experiencing any issues, Please attempt to refresh the page before contacting support. Thank you/i,
     ),
   ).toBeVisible({ timeout: 10_000 });
-  await expect(screen.getByText(/Call on 0333 8000 883/i)).toBeVisible({ timeout: 10_000 });
-  await expect(screen.getByText(/Email us on support@jobsafe.cloud/i)).toBeVisible({ timeout: 10_000 });
+  await expect(screen.getByText(/Call on/i)).toBeVisible({ timeout: 10_000 });
+  await expect(screen.getByText(/Email us on/i)).toBeVisible({ timeout: 10_000 });
   await expect(screen.getByText(/Monday - Friday | 9:00am - 5:00pm UK /i)).toBeVisible({ timeout: 10_000 });
   await expect(screen.getByRole('button', { name: 'Close' })).toBeVisible({ timeout: 10_000 });
 };

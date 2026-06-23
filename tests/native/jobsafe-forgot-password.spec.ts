@@ -23,7 +23,6 @@ test.describe('JobSafe native — Forgot Password', () => {
     test.beforeEach(async ({ device, bundleId, screen }) => {
         // bundleId is guaranteed set here: the describe-level test.skip bails
         // out when no native app is configured.
-        await device.launchApp(bundleId!);
         await screen.getByText(/Forgot password\?/i).tap();
         await expect(screen.getByText(/Simply provide us with your Email/i)).toBeVisible({ timeout: 10_000 });
     });
