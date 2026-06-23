@@ -102,14 +102,14 @@ test.describe('Change Password flow', () => {
     const changePage = new ChangePasswordPage(page);
     await changePage.goto();
 
-    await changePage.fillCode(resetCode);
+    await changePage.fillCode(resetCode!);
     await changePage.fillNewPassword(newPassword);
     await changePage.fillConfirmPassword(newPassword);
 
     await expect(changePage.resetNowButton).toBeEnabled();
     await changePage.clickResetNow();
 
-    await expect(page.locator(/password.*(changed|reset|updated)|success/i)).toBeVisible();
+    await expect(page.getByText(/password.*(changed|reset|updated)|success/i)).toBeVisible();
     await expect(page).not.toHaveURL(/change-password/);
   });
 
@@ -124,7 +124,7 @@ test.describe('Change Password flow', () => {
     await loginPage.submit();
 
     await expect(page).toHaveURL(/login/);
-    await expect(page.locator(/incorrect|invalid|failed|wrong/i)).toBeVisible();
+    await expect(page.getByText(/incorrect|invalid|failed|wrong/i)).toBeVisible();
   });
 
   test('Verify login with the new password', async ({ page }) => {

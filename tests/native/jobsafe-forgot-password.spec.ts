@@ -3,6 +3,7 @@
  */
 import { test, expect } from '@mobilewright/test';
 import { nativeEnv } from '../../utils/native-env';
+import { expectNeedHelpModal } from './utils/shared-assertions';
 
 const hasNativeApp = Boolean(nativeEnv.androidPackage || nativeEnv.iosBundle);
 const invalidCreds = {
@@ -19,8 +20,10 @@ test.describe('JobSafe native — Forgot Password', () => {
         }
     });
 
-    test.beforeEach(async ({ device, bundleId,screen }) => {
-        await device.launchApp(bundleId);
+    test.beforeEach(async ({ device, bundleId, screen }) => {
+        // bundleId is guaranteed set here: the describe-level test.skip bails
+        // out when no native app is configured.
+        await device.launchApp(bundleId!);
         await screen.getByText(/Forgot password\?/i).tap();
         await expect(screen.getByText(/Simply provide us with your Email/i)).toBeVisible({ timeout: 10_000 });
     });
@@ -48,10 +51,20 @@ test.describe('JobSafe native — Forgot Password', () => {
         await expect(screen.getByText(/Thank you!/i)).toBeVisible({ timeout: 10_000 });
         await expect(screen.getByText(/We have received your request/i)).toBeVisible({ timeout: 10_000 });
         await expect(screen.getByText(/If your email is recognised we will send you an email back with a verification code that you will need to change your current password/i)).toBeVisible({ timeout: 10_000 });
+        await expect(screen.getByRole('button', { name: 'Change Password' })).toBeVisible({ timeout: 10_000 });
+        await expect(screen.getByText(/No Email received\?/i)).toBeVisible({ timeout: 10_000 });
+    });
+
+    test('Thank you page conatin the No Email received? link and it opens the need help modal', async ({ screen }) => {
+        await screen.getByPlaceholder('Email').fill(nativeEnv.email);
+        await screen.getByRole('button', { name: 'Next' }).tap();
+        await screen.getByText(/No Email received\?/i).tap();
+        await expectNeedHelpModal(screen);
     });
 
     test('Need Help button working and opens help modal', async ({ screen }) => {
         await screen.getByType('Button').nth(1).tap();
-        await expect(screen.getByText(/Need Help\?/i)).toBeVisible({ timeout: 10_000 });
+        await expectNeedHelpModal(screen);
     });
+
 });

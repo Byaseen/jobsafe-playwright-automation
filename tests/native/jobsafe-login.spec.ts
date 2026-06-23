@@ -3,6 +3,7 @@
  */
 import { test, expect } from '@mobilewright/test';
 import { nativeEnv } from '../../utils/native-env';
+import { expectNeedHelpModal } from './utils/shared-assertions';
 
 const hasNativeApp = Boolean(nativeEnv.androidPackage || nativeEnv.iosBundle);
 const invalidCreds = {
@@ -20,7 +21,9 @@ test.describe('JobSafe native — login', () => {
   });
 
   test.beforeEach(async ({ device, bundleId }) => {
-    await device.launchApp(bundleId);
+    // bundleId is guaranteed set here: the describe-level test.skip bails out
+    // when no native app is configured.
+    await device.launchApp(bundleId!);
   });
 
   // Runs first on purpose: a successful login persists the session across
@@ -58,7 +61,7 @@ test.describe('JobSafe native — login', () => {
 
   test('Need Help button working and opens help modal', async ({ screen }) => {
     await screen.getByType('Button').first().tap();
-    await expect(screen.getByText(/Need Help\?/i)).toBeVisible({ timeout: 10_000 });
+    await expectNeedHelpModal(screen);
   });
 
   test('logs in with valid credentials and reaches home', async ({ screen }) => {
