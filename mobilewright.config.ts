@@ -68,5 +68,10 @@ export default defineConfig({
   actionTimeout: 10_000,
   viewTree: 'on-failure',
   reporter: 'list',
+  // A physical device hosts one automation session at a time. Multiple workers
+  // collide on the lockdown tunnel port ("bind: address already in use") and
+  // launchApp hangs, so native tests must run serially.
+  workers: 1,
+  fullyParallel: false,
   projects,
 });

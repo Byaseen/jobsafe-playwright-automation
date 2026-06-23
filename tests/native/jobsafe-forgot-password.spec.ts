@@ -44,8 +44,13 @@ test.describe('JobSafe native — Forgot Password', () => {
         await screen.getByRole('button', { name: 'Go back to previous screen' }).tap();
         await expect(screen.getByRole('button', { name: 'Login' })).toBeVisible({ timeout: 10_000 });
     });
+
+    test('test back arrow button working and navigates back to login screen', async ({ screen }) => {
+        await screen.getByType('Button').first().tap();
+        await expect(screen.getByRole('button', { name: 'Login' })).toBeVisible({ timeout: 10_000 });
+    });
     
-    test('test Email with valid credentials and navigates to reset password screen', async ({ screen }) => {
+    test('test Email with valid credentials and navigates to Thank you screen', async ({ screen }) => {
         await screen.getByPlaceholder('Email').fill(nativeEnv.email);
         await screen.getByRole('button', { name: 'Next' }).tap();
         await expect(screen.getByText(/Thank you!/i)).toBeVisible({ timeout: 10_000 });
@@ -66,5 +71,4 @@ test.describe('JobSafe native — Forgot Password', () => {
         await screen.getByType('Button').nth(1).tap();
         await expectNeedHelpModal(screen);
     });
-
 });
