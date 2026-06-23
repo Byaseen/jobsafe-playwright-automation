@@ -43,6 +43,10 @@ if (jobsafePackage) {
   projects.push({
     name: 'jobsafe-android',
     testMatch: /jobsafe-.*\.spec\.ts/,
+    // Retry: over a long serial run the on-device agent can degrade (iOS
+    // memory pressure / Jetsam), stalling a later test's beforeEach. A retry
+    // relaunches the app fresh and almost always clears the transient stall.
+    retries: 2,
     use,
   });
 }
@@ -58,6 +62,10 @@ if (iosBundle) {
   projects.push({
     name: 'jobsafe-ios',
     testMatch: /jobsafe-.*\.spec\.ts/,
+    // Retry: over a long serial run the on-device agent can degrade (iOS
+    // memory pressure / Jetsam), stalling a later test's beforeEach. A retry
+    // relaunches the app fresh and almost always clears the transient stall.
+    retries: 2,
     use,
   });
 }
