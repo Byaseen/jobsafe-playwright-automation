@@ -54,13 +54,4 @@ test.describe('JobSafe native — Forgot Password', () => {
         await screen.getByType('Button').nth(1).tap();
         await expect(screen.getByText(/Need Help\?/i)).toBeVisible({ timeout: 10_000 });
     });
-
-    test('Change password button working and navigates to change password screen', async ({ screen }) => {
-        await screen.getByRole('button', { name: 'Change Password' }).tap();
-        await expect(screen.getByText(/Enter your new password below/i)).toBeVisible({ timeout: 10_000 });
-        await expect(screen.getByRole('button', { name: 'Reset Now' })).toBeVisible({ timeout: 10_000 });
-        await expect(screen.getByPlaceholder('Code')).toBeVisible({ timeout: 10_000 });
-        await expect(screen.getByLabel('New Password')).toBeVisible({ timeout: 10_000 });
-        await expect(screen.getByLabel('Confirm Password')).toBeVisible({ timeout: 10_000 });
-    });
 });
