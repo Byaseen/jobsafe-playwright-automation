@@ -36,14 +36,6 @@ test.describe('JobSafe native — login', () => {
     await expect(screen.getByRole('button', { name: 'Login' })).toBeVisible({ timeout: 10_000 });
   });
 
-  test('logs in with valid credentials and reaches home', async ({ screen }) => {
-    await screen.getByPlaceholder('Email').fill(nativeEnv.email);
-    await screen.getByPlaceholder('Choose a password').fill(nativeEnv.password);
-    await screen.getByRole('button', { name: 'Login' }).tap();
-
-    await expect(screen.getByText(/My Reports/i).first()).toBeVisible({ timeout: 30_000 });
-  });
-
   test('Email & password fields are required and show validation errors', async ({ screen }) => {
     await screen.getByPlaceholder('Email').tap();
     await screen.getByPlaceholder('Choose a password').tap();
@@ -62,6 +54,18 @@ test.describe('JobSafe native — login', () => {
   test('Forgot password link navigates to the forgot password screen', async ({ screen }) => {
     await screen.getByText(/Forgot password\?/i).tap();
     await expect(screen.getByText(/Simply provide us with your Email/i)).toBeVisible({ timeout: 10_000 });
+  });
+
+  test('Need Help button working and opens help modal', async ({ screen }) => {
+    await screen.getByType('Button').first().tap();
+    await expect(screen.getByText(/Need Help\?/i)).toBeVisible({ timeout: 10_000 });
+  });
+
+  test('logs in with valid credentials and reaches home', async ({ screen }) => {
+    await screen.getByPlaceholder('Email').fill(nativeEnv.email);
+    await screen.getByPlaceholder('Choose a password').fill(nativeEnv.password);
+    await screen.getByRole('button', { name: 'Login' }).tap();
+    await expect(screen.getByText(/My Reports/i).first()).toBeVisible({ timeout: 30_000 });
   });
 
 });
