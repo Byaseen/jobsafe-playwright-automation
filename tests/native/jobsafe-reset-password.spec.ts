@@ -132,9 +132,25 @@ test.describe('JobSafe native — Reset Password', () => {
             await screen.getByRole('button', { name: 'Close' }).tap();
         });
 
+        // "Try again" and "Request another code" both LEAVE the error screen, so
+        // each error-screen visit can exercise only one. We do "Try again" first
+        // (cheap return to the reset screen), re-submit the wrong code to land
+        // back on the error screen, then do "Request another code" last — it has
+        // no cheap way back, and ending on the forgot-password screen is harmless.
         await test.step('Try again returns to the reset password screen', async () => {
             await screen.getByRole('button', { name: 'Try again' }).tap();
             await expectResetPasswordScreen(screen);
+        });
+
+        await test.step('re-submit wrong code to return to the error screen', async () => {
+            await screen.getByPlaceholder("Code").fill("123456");
+            await dismissKeyboard(screen);
+            await screen.getByPlaceholder("Choose a password").first().fill(nativeEnv.password);
+            await dismissKeyboard(screen);
+            await screen.getByPlaceholder("Choose a password").last().fill(nativeEnv.password);
+            await dismissKeyboard(screen);
+            await screen.getByRole('button', { name: 'Reset Now' }).tap();
+            await expect(screen.getByText(/The code that you have used is invalid!/i)).toBeVisible({ timeout: 10_000 });
         });
 
         await test.step('Request another code link opens forgot password screen', async () => {
