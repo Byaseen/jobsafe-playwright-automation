@@ -25,17 +25,69 @@ const SIDEBAR_ITEMS = [
  */
 export class AdminDashboardPage {
   readonly screen: Screen;
-  /** The hamburger toggle is the first Button on the home screen. */
+  /**
+   * The hamburger ("menu") button toggles the sidebar. There is no separate
+   * close (X): tapping it opens the drawer, and the same control inside the open
+   * drawer — the first "menu" button in the tree — closes it again.
+   */
   readonly sidebarToggle: Locator;
+  /** A sidebar-only item, used to assert the drawer is open / closed. */
+  readonly sidebarIndicator: Locator;
+  readonly logoutButton: Locator;
+  /** The notifications bell — the 2nd Button on the dashboard (top-right, right
+   *  after the "menu" hamburger). It has no accessibility label, so it's located
+   *  by position via getByType (exact Button nodes, matching the view tree order)
+   *  rather than getByRole, whose match set can include clickable views and
+   *  shift the index. */
+  readonly notificationsButton: Locator;
+  /** The logged-in user's name — the first StaticText at the top of the open
+   *  drawer (sits above the "user since …" line). Only meaningful while the
+   *  sidebar is open. */
+  readonly sidebarUserName: Locator;
+  /** Bottom-nav tab that opens the Reports screen. */
+  readonly myReportsTab: Locator;
 
   constructor(screen: Screen) {
     this.screen = screen;
-    this.sidebarToggle = screen.getByRole('button').first();
+    this.sidebarToggle = screen.getByRole('button', { name: 'menu' }).first();
+    this.sidebarIndicator = screen.getByText(/Logout/i);
+    this.sidebarUserName = screen.getByType('StaticText').first();
+    this.logoutButton = screen.getByRole('button', { name: 'Logout' });
+    this.notificationsButton = screen.getByType('Button').nth(1);
+    this.myReportsTab = screen.getByRole('button', { name: 'My Reports' });
   }
 
   // ─── Actions ───────────────────────────────────────────────────
   async openSidebar() {
     await this.sidebarToggle.tap();
+  }
+
+  /** Open the Reports screen from the home bottom-nav. */
+  async openMyReports() {
+    await this.myReportsTab.tap();
+  }
+
+  async closeSidebar() {
+    // Same "menu" toggle — when the drawer is open it's the first button in the
+    // tree, so this taps the in-drawer hamburger and closes it.
+    await this.sidebarToggle.tap();
+  }
+
+  async openNotifications() {
+    await this.notificationsButton.tap();
+  }
+
+  /** Open the sidebar (if it isn't already) and tap Logout. */
+  async logout() {
+    const drawerOpen = await this.sidebarIndicator.isVisible({ timeout: 1_000 }).catch(() => false);
+    if (!drawerOpen) {
+      await this.openSidebar();
+    }
+    await this.logoutButton.tap();
+  }
+
+  async openSupportModal() {
+    await this.screen.getByText(/Support \/ Contact/i).tap();
   }
 
   // ─── Assertions ────────────────────────────────────────────────
@@ -60,6 +112,28 @@ export class AdminDashboardPage {
       await scrollDownToReveal(this.screen, this.screen.getByText(label));
       await expect(this.screen.getByText(label)).toBeVisible({ timeout: 10_000 });
     }
+  }
+
+  /** Read the user name shown at the top of the open sidebar. */
+  async getUserName() {
+    return (await this.sidebarUserName.getText()).trim();
+  }
+
+  /** Assert the open sidebar shows exactly the expected user name. */
+  async expectUserName(expected: string) {
+    expect(await this.getUserName()).toBe(expected);
+  }
+
+  async expectNotificationsOpen() {
+    await expect(this.screen.getByText(/Your notifications/i)).toBeVisible({ timeout: 10_000 });
+  }
+
+  async expectSidebarOpen() {
+    await expect(this.sidebarIndicator).toBeVisible({ timeout: 10_000 });
+  }
+
+  async expectSidebarClosed() {
+    await expect(this.sidebarIndicator).not.toBeVisible({ timeout: 10_000 });
   }
 
   async expectSidebarItems() {
