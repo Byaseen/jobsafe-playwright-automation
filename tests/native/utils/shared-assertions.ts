@@ -22,3 +22,20 @@ export const expectNeedHelpModal = async (screen: Screen) => {
   await expect(screen.getByText(/Monday - Friday | 9:00am - 5:00pm UK /i)).toBeVisible({ timeout: 10_000 });
   await expect(screen.getByRole('button', { name: 'Close' })).toBeVisible({ timeout: 10_000 });
 };
+
+/** Assert the Forgot Password screen is shown with its email form. */
+export const expectForgotPasswordScreen = async (screen: Screen) => {
+  await expect(screen.getByText(/Simply provide us with your Email/i)).toBeVisible({ timeout: 10_000 });
+  await expect(screen.getByPlaceholder('Email')).toBeVisible({ timeout: 10_000 });
+  await expect(screen.getByRole('button', { name: 'Next' })).toBeVisible({ timeout: 10_000 });
+  await expect(screen.getByRole('button', { name: 'Go back to previous screen' })).toBeVisible({ timeout: 10_000 });
+};
+
+/** Assert the Thank you confirmation screen is shown after a valid request. */
+export const expectThankYouScreen = async (screen: Screen) => {
+  await expect(screen.getByText(/Thank you!/i)).toBeVisible({ timeout: 10_000 });
+  await expect(screen.getByText(/We have received your request/i)).toBeVisible({ timeout: 10_000 });
+  await expect(screen.getByText(/If your email is recognised we will send you an email back with a verification code that you will need to change your current password/i)).toBeVisible({ timeout: 10_000 });
+  await expect(screen.getByRole('button', { name: 'Change Password' })).toBeVisible({ timeout: 10_000 });
+  await expect(screen.getByText(/No Email received\?/i)).toBeVisible({ timeout: 10_000 });
+};

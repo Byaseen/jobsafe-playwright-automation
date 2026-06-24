@@ -3,21 +3,9 @@
  */
 import { test, expect } from '@mobilewright/test';
 import { nativeEnv } from '../../utils/native-env';
-import { expectNeedHelpModal } from './utils/shared-assertions';
-import { Screen } from '@mobilewright/core';
+import { expectNeedHelpModal, expectForgotPasswordScreen, expectThankYouScreen } from './utils/shared-assertions';
 
 const hasNativeApp = Boolean(nativeEnv.androidPackage || nativeEnv.iosBundle);
-const invalidCreds = {
-  email : 'test@test.com',
-  password : 'wrong-password-123',
-}
-
-export const expectForgotPasswordScreen = async (screen : Screen) => {
-    await expect(screen.getByText(/Simply provide us with your Email/i)).toBeVisible({ timeout: 10_000 });
-    await expect(screen.getByPlaceholder('Email')).toBeVisible({ timeout: 10_000 });
-    await expect(screen.getByRole('button', { name: 'Next' })).toBeVisible({ timeout: 10_000 });
-    await expect(screen.getByRole('button', { name: 'Go back to previous screen' })).toBeVisible({ timeout: 10_000 });
-};
 
 test.describe('JobSafe native — Forgot Password', () => {
   test.skip(!hasNativeApp, 'Set ANDROID_PACKAGE or IOS_BUNDLE_ID when you have the JobSafe APK/IPA');
@@ -76,11 +64,7 @@ test.describe('JobSafe native — Forgot Password', () => {
         await screen.getByRole('button', { name: 'Next' }).tap();
 
         await test.step('valid email reaches the Thank you confirmation screen', async () => {
-            await expect(screen.getByText(/Thank you!/i)).toBeVisible({ timeout: 10_000 });
-            await expect(screen.getByText(/We have received your request/i)).toBeVisible({ timeout: 10_000 });
-            await expect(screen.getByText(/If your email is recognised we will send you an email back with a verification code that you will need to change your current password/i)).toBeVisible({ timeout: 10_000 });
-            await expect(screen.getByRole('button', { name: 'Change Password' })).toBeVisible({ timeout: 10_000 });
-            await expect(screen.getByText(/No Email received\?/i)).toBeVisible({ timeout: 10_000 });
+            await expectThankYouScreen(screen);
         });
 
         await test.step('No Email received? link opens the need-help modal', async () => {

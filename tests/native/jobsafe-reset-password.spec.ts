@@ -3,10 +3,9 @@
  */
 import { test, expect } from '@mobilewright/test';
 import { nativeEnv } from '../../utils/native-env';
-import { expectNeedHelpModal } from './utils/shared-assertions';
+import { expectNeedHelpModal, expectForgotPasswordScreen, expectThankYouScreen } from './utils/shared-assertions';
 import { dismissKeyboard } from './utils/keyboard';
 import type { Screen } from '@mobilewright/core';
-import { expectForgotPasswordScreen } from './jobsafe-forgot-password.spec';
 
 const hasNativeApp = Boolean(nativeEnv.androidPackage || nativeEnv.iosBundle);
 const invalidCreds = {
@@ -38,7 +37,7 @@ test.describe('JobSafe native — Reset Password', () => {
         await expect(screen.getByText(/Simply provide us with your Email/i)).toBeVisible({ timeout: 10_000 });
         await screen.getByPlaceholder('Email').fill(nativeEnv.email);
         await screen.getByRole('button', { name: 'Next' }).tap();
-        await expect(screen.getByText(/Thank you!/i)).toBeVisible({ timeout: 10_000 });
+        await expectThankYouScreen(screen);
         await screen.getByRole('button', { name: 'Change Password' }).tap();
         await expect(screen.getByText(/Reset your Password/i)).toBeVisible({ timeout: 10_000 });
     });
