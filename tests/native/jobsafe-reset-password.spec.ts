@@ -3,9 +3,10 @@
  */
 import { test, expect } from '@mobilewright/test';
 import { nativeEnv } from '../../utils/native-env';
-import { expectNeedHelpModal, expectForgotPasswordScreen, expectThankYouScreen } from './utils/shared-assertions';
+import { expectNeedHelpModal, expectForgotPasswordScreen, expectThankYouScreen, expectLoginScreen, expectHomeScreen } from './utils/shared-assertions';
 import { dismissKeyboard } from './utils/keyboard';
 import type { Screen } from '@mobilewright/core';
+import { waitForDeviceInput } from './utils/manual-input';
 
 const hasNativeApp = Boolean(nativeEnv.androidPackage || nativeEnv.iosBundle);
 const invalidCreds = {
@@ -156,6 +157,57 @@ test.describe('JobSafe native — Reset Password', () => {
         await test.step('Request another code link opens forgot password screen', async () => {
             await screen.getByText(/Request another code/i).tap();
             await expectForgotPasswordScreen(screen);
+        });
+    });
+
+    // Happy path: requires the REAL verification code emailed to USER_EMAIL.
+    // Resets the password to USER_NEW_PASSWORD (must differ from USER_PASSWORD),
+    // then proves the OLD password no longer logs in. Gated behind RUN_MANUAL=1
+    // (needs you in the loop — would hang in CI).
+    //   RUN_MANUAL=1 npx mobilewright test --grep "emailed code" --project jobsafe-ios
+    test('reset password succeeds with a valid emailed code', async ({ screen }) => {
+        test.skip(!nativeEnv.runManual, 'Set RUN_MANUAL=1 to run the manual-input reset flow');
+        if (!nativeEnv.newPassword || nativeEnv.newPassword === nativeEnv.password) {
+            throw new Error('Set USER_NEW_PASSWORD in .env to a value different from USER_PASSWORD');
+        }
+        test.setTimeout(0); // the clock keeps running while we wait for input
+
+        await test.step('valid code resets the password and lands on the login screen', async () => {
+            // Reset TO the new password — you only need to enter the code by hand.
+            await screen.getByPlaceholder("Choose a password").first().fill(nativeEnv.newPassword);
+            await dismissKeyboard(screen);
+            await screen.getByPlaceholder("Choose a password").last().fill(nativeEnv.newPassword);
+            await dismissKeyboard(screen);
+
+            // Type the emailed code into the Code field on the device. We poll the
+            // field until it holds 6 digits, then carry on.
+            await waitForDeviceInput(
+                () => screen.getByPlaceholder('Code').getValue(),
+                {
+                    isComplete: (value) => /^\d{6}$/.test(value),
+                    message: 'Type the emailed verification code into the Code field on the iPhone…',
+                },
+            );
+
+            await dismissKeyboard(screen);
+            await screen.getByRole('button', { name: 'Reset Now' }).tap();
+            await expect(screen.getByText(/Your password has been reset successfully/i)).toBeVisible({ timeout: 10_000 });
+            await expectLoginScreen(screen);
+        });
+
+        await test.step('Verify that user is unable to login using old password', async () => {
+            await screen.getByPlaceholder('Email').fill(nativeEnv.email);
+            await screen.getByPlaceholder('Choose a password').fill(nativeEnv.password); // the OLD password
+            await dismissKeyboard(screen);
+            await screen.getByRole('button', { name: 'Login' }).tap();
+            await expect(screen.getByText(/Incorrect username or password/i)).toBeVisible({ timeout: 10_000 });
+        });
+
+        await test.step('Verify login with the new password', async () => {
+            await screen.getByPlaceholder('Choose a password').fill(nativeEnv.newPassword); // the NEW password
+            await dismissKeyboard(screen);
+            await screen.getByRole('button', { name: 'Login' }).tap();
+            await expectHomeScreen(screen);
         });
     });
 });
