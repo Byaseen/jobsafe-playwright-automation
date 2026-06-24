@@ -39,3 +39,18 @@ export const expectThankYouScreen = async (screen: Screen) => {
   await expect(screen.getByRole('button', { name: 'Change Password' })).toBeVisible({ timeout: 10_000 });
   await expect(screen.getByText(/No Email received\?/i)).toBeVisible({ timeout: 10_000 });
 };
+
+export const expectLoginScreen = async (screen: Screen) => {
+  await expect(screen.getByText(/Login/i)).toBeVisible({ timeout: 10_000 });
+  await expect(screen.getByPlaceholder('Email')).toBeVisible({ timeout: 10_000 });
+  await expect(screen.getByPlaceholder('Choose a password')).toBeVisible({ timeout: 10_000 });
+  await expect(screen.getByRole('button', { name: 'Login' })).toBeVisible({ timeout: 10_000 });
+  await expect(screen.getByText(/Forgot password\?/i)).toBeVisible({ timeout: 10_000 });
+}
+
+export const expectHomeScreen = async (screen: Screen) => {
+  await expect(screen.getByText(/My Reports/i).first()).toBeVisible({ timeout: 10_000 });
+  await expect(screen.getByText(/Documents/i).first()).toBeVisible({ timeout: 10_000 });
+  await expect(screen.getByText(/SOS/i).first()).toBeVisible({ timeout: 10_000 });
+  await expect(screen.getByText(/Home/i).first()).toBeVisible({ timeout: 10_000 });
+}

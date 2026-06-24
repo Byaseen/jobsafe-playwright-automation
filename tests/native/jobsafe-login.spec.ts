@@ -3,7 +3,7 @@
  */
 import { test, expect } from '@mobilewright/test';
 import { nativeEnv } from '../../utils/native-env';
-import { expectNeedHelpModal } from './utils/shared-assertions';
+import { expectLoginScreen, expectNeedHelpModal } from './utils/shared-assertions';
 
 const hasNativeApp = Boolean(nativeEnv.androidPackage || nativeEnv.iosBundle);
 const invalidCreds = {
@@ -20,9 +20,8 @@ test.describe('JobSafe native — login', () => {
     }
   });
 
-  test.beforeEach(async ({ device, bundleId }) => {
-    // bundleId is guaranteed set here: the describe-level test.skip bails out
-    // when no native app is configured.
+  test('Test login screen elemnts are visible', async ({ screen }) => {
+    expectLoginScreen(screen);
   });
 
   // Runs first on purpose: a successful login persists the session across
@@ -36,6 +35,7 @@ test.describe('JobSafe native — login', () => {
     await expect(screen.getByText(/My Reports/i).first()).not.toBeVisible({ timeout: 10_000 });
     // ...and the Login button is still on screen.
     await expect(screen.getByRole('button', { name: 'Login' })).toBeVisible({ timeout: 10_000 });
+    await expect(screen.getByText(/Incorrect username or password/i)).toBeVisible({ timeout: 10_000 });
   });
 
   test('Email & password fields are required and show validation errors', async ({ screen }) => {
