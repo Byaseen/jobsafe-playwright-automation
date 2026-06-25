@@ -65,6 +65,17 @@ export class NearMissReportPage {
     await this.saveAndSendButton.tap();
   }
 
+  /**
+   * Tap a required field, blur it (so the touched-empty validation fires), and
+   * assert its required message shows. `message` is passed in because the exact
+   * wording differs per field.
+   */
+  async expectRequiredWhenEmpty(input: Locator, message: RegExp) {
+    await input.tap();
+    await dismissKeyboard(this.screen); // blur the field
+    await expect(this.screen.getByText(message)).toBeVisible({ timeout: 10_000 });
+  }
+
   // ─── Assertions ────────────────────────────────────────────────
   /** The Near Miss creation screen is shown with its key fields. */
   async expectLoaded() {
