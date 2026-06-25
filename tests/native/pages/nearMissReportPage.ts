@@ -1,7 +1,7 @@
 import { expect } from '@mobilewright/test';
 import type { Screen, Locator } from '@mobilewright/core';
 import { dismissKeyboard } from '../utils/keyboard';
-import { promptManualInput } from '../utils/manual-input';
+import { drawSignature } from '../utils/signature';
 
 /**
  * The Near Miss report creation screen, reached via Reports → "+" → Near Miss.
@@ -11,12 +11,11 @@ import { promptManualInput } from '../utils/manual-input';
  * located by their position among all TextFields — confirmed from a view-tree
  * dump.
  *
- * Two parts of the form cannot be automated and are completed by hand via
- * waitForManualSeverityAndSignature():
- *   • Severity Level — a WebView dropdown that the iOS accessibility bridge does
- *     NOT expose as a node (nothing exists in the tree between the "Severity
- *     Level" label and the next field), so no locator can target it.
- *   • Employee signature — a freehand canvas, which has no programmatic input.
+ * The Employee signature is captured automatically by signEmployeeSignature():
+ * tapping its "Sign" button opens an "Add a Signature" modal with a freehand
+ * canvas (no accessibility node), which we draw on by coordinate, then confirm
+ * with DONE. Once captured the form shows an "employee signature" image and the
+ * "Sign" button becomes "Re-sign".
  */
 export class NearMissReportPage {
   readonly screen: Screen;
@@ -33,6 +32,15 @@ export class NearMissReportPage {
   // Inputs (positional — see class note).
   readonly titleInput: Locator;
   readonly incidentTimeInput: Locator;
+  // Employee signature: its "Sign" button (the first of two — Manager's is the
+  // optional second), the modal it opens, and the proof it was captured.
+  readonly employeeSignButton: Locator;
+  readonly signatureModalTitle: Locator;
+  readonly signatureDoneButton: Locator;
+  readonly signatureClearButton: Locator;
+  readonly signatureCancelButton: Locator;
+  readonly employeeSignatureImage: Locator;
+  readonly employeeReSignButton: Locator;
   // Primary actions.
   readonly saveButton: Locator;
   readonly saveAndSendButton: Locator;
@@ -52,6 +60,17 @@ export class NearMissReportPage {
     // Date(datepicker), 3 Incident Time, 4 Title, ... (from the view-tree dump).
     this.incidentTimeInput = screen.getByType('TextField').nth(3);
     this.titleInput = screen.getByType('TextField').nth(4);
+    // Employee Signature is the first "Sign" button; Manager Signature (Optional)
+    // is the second. The modal's title and DONE/CLEAR/CANCEL come from a dump.
+    this.employeeSignButton = screen.getByRole('button', { name: 'Sign' }).first();
+    this.signatureModalTitle = screen.getByText(/Add a Signature/i);
+    this.signatureDoneButton = screen.getByRole('button', { name: 'DONE' });
+    this.signatureClearButton = screen.getByRole('button', { name: 'CLEAR' });
+    this.signatureCancelButton = screen.getByRole('button', { name: 'CANCEL' });
+    // Once signed, the captured signature renders as an image labelled "employee
+    // signature" and the "Sign" button is replaced by "Re-sign".
+    this.employeeSignatureImage = screen.getByLabel('employee signature');
+    this.employeeReSignButton = screen.getByRole('button', { name: 'Re-sign' });
     // Two "Save" buttons exist (witness + bottom); the bottom one is last.
     this.saveButton = screen.getByRole('button', { name: 'Save' }).last();
     this.saveAndSendButton = screen.getByRole('button', { name: 'Save and send' });
@@ -75,20 +94,21 @@ export class NearMissReportPage {
   }
 
   /**
-   * Pause for the tester to complete the two parts that can't be automated — the
-   * Severity Level dropdown (no accessibility node) and the Employee signature
-   * (a freehand canvas) — on the device, then press Enter in the terminal to
-   * resume. keepAlive polls a cheap query so the physical-device session doesn't
-   * go idle during the wait.
-   *
-   * Interactive only — gate callers behind nativeEnv.runManual (RUN_MANUAL=1)
-   * and relax the test timeout (test.setTimeout(0)).
+   * Capture the Employee signature automatically: bring its "Sign" button into
+   * view and tap it, draw on the modal's freehand canvas, then confirm with DONE.
+   * Asserts the captured signature is reflected back on the form ("Sign" becomes
+   * "Re-sign"), so a no-op draw can't pass silently.
    */
-  async waitForManualSeverityAndSignature() {
-    await promptManualInput(
-      'On the iPhone: select a Severity Level and sign the Employee signature, then press Enter to continue…',
-      { keepAlive: () => this.saveAndSendButton.isVisible({ timeout: 2_000 }).catch(() => false) },
-    );
+  async signEmployeeSignature() {
+    // The Sign button sits mid-form, so (unlike the bottom Save buttons) we can
+    // scroll it to the screen centre and tap it by locator — far more reliable
+    // than tapWhenInView's edge-of-band coordinate tap, which can miss it.
+    await this.centreInView(this.employeeSignButton);
+    await this.employeeSignButton.tap();
+    await expect(this.signatureModalTitle).toBeVisible({ timeout: 10_000 });
+    await drawSignature(this.screen);
+    await this.signatureDoneButton.tap();
+    await expect(this.employeeReSignButton).toBeVisible({ timeout: 10_000 });
   }
 
   async saveAndSend() {
@@ -133,6 +153,34 @@ export class NearMissReportPage {
       await this.sleep(400);
     }
     throw new Error('tapWhenInView: button never settled inside the viewport');
+  }
+
+  /**
+   * Scroll a mid-form control so its centre sits in a comfortable middle band,
+   * then let it settle — the caller taps it by locator. Unlike tapWhenInView
+   * (built for controls pinned to the bottom edge), this keeps the target away
+   * from the sticky header and the footer/keyboard, where a tap can slip off.
+   *
+   * Bounds are viewport-relative in this WebView, so a target below the fold
+   * reports a y past the screen height; we swipe up to pull it in and down if we
+   * overshoot, using short swipes for fine control.
+   */
+  private async centreInView(target: Locator, top = 150, bottom = 470, maxSwipes = 18) {
+    for (let i = 0; i < maxSwipes; i++) {
+      const box = await target.boundingBox().catch(() => null);
+      if (box) {
+        const centre = box.y + box.height / 2;
+        if (centre >= top && centre <= bottom) {
+          await this.sleep(500); // let any inertial scroll settle before the tap
+          return;
+        }
+        await this.screen.swipe(centre > bottom ? 'up' : 'down', { distance: 160 });
+      } else {
+        await this.screen.swipe('up', { distance: 160 });
+      }
+      await this.sleep(300);
+    }
+    throw new Error('centreInView: control never settled in the middle band');
   }
 
   private sleep(ms: number) {

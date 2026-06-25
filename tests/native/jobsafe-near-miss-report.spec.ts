@@ -59,9 +59,7 @@ test.describe('JobSafe native — Near Miss report', () => {
     await form.expectRequiredWhenEmpty(form.titleInput, /This field is required/i);
   });
 
-  test('creates a Near Miss report (manual Severity + Employee signature) & save it as draft', async ({ screen }) => {
-    test.skip(!nativeEnv.runManual, 'Set RUN_MANUAL=1 to run the manual Near Miss submit flow');
-    test.setTimeout(0); // the clock keeps running while we wait for input
+  test('creates a Near Miss report (automated Employee signature) & save it as draft', async ({ screen }) => {
     const reportsPage = new ReportsPage(screen);
     const form = new NearMissReportPage(screen);
     await form.expectLoaded();
@@ -69,7 +67,7 @@ test.describe('JobSafe native — Near Miss report', () => {
     // Unique title so we can find this exact report in the list afterwards.
     const title = uniqueTitle('Near Miss Draft');
     await form.fillRequiredFields({ title, incidentTime: '10:00 AM' });
-    await form.waitForManualSeverityAndSignature();
+    await form.signEmployeeSignature();
     await form.save();
 
     // Back on the Reports list, the saved report should be there. Saving
@@ -78,9 +76,7 @@ test.describe('JobSafe native — Near Miss report', () => {
     await reportsPage.expectReportListed(title, 60_000);
   });
 
-  test('creates a Near Miss report (manual Severity + Employee signature) & save and send it', async ({ screen }) => {
-    test.skip(!nativeEnv.runManual, 'Set RUN_MANUAL=1 to run the manual Near Miss submit flow');
-    test.setTimeout(0); // the clock keeps running while we wait for input
+  test('creates a Near Miss report (automated Employee signature) & save and send it', async ({ screen }) => {
     const reportsPage = new ReportsPage(screen);
     const form = new NearMissReportPage(screen);
     await form.expectLoaded();
@@ -88,7 +84,7 @@ test.describe('JobSafe native — Near Miss report', () => {
     // Unique title so we can find this exact report in the list afterwards.
     const title = uniqueTitle('Near Miss Sent');
     await form.fillRequiredFields({ title, incidentTime: '10:00 AM' });
-    await form.waitForManualSeverityAndSignature();
+    await form.signEmployeeSignature();
     await form.saveAndSend();
     await form.expectSentSuccessfully();
 
