@@ -20,10 +20,15 @@ export class ReportTypeModal {
 
   constructor(screen: Screen) {
     this.screen = screen;
-    this.hsseReport = screen.getByText(/HSSE/i);
-    this.incident = screen.getByText(/Incident/i);
-    this.other = screen.getByText(/Other/i);
-    this.nearMiss = screen.getByText(/Near Miss/i);
+    // Anchored regexes: a saved report in the list behind the modal can carry
+    // the type in its title (e.g. "Near Miss - INC-001"), which a loose
+    // substring matcher like /Near Miss/i would also hit. The modal's own option
+    // cards are short, fully-uppercase labels ("HSSE", "INCIDENT", "OTHER",
+    // "NEAR MISS"), so ^…$ matches only those, not the report card.
+    this.hsseReport = screen.getByText(/^HSSE$/i);
+    this.incident = screen.getByText(/^Incident$/i);
+    this.other = screen.getByText(/^Other$/i);
+    this.nearMiss = screen.getByText(/^Near Miss$/i);
     this.closeButton = screen.getByType('Button').first();
   }
 

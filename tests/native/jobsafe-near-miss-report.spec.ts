@@ -3,6 +3,7 @@
  */
 import { test } from '@mobilewright/test';
 import { nativeEnv } from '../../utils/native-env';
+import { uniqueTitle } from './utils/test-data';
 import { LoginPage } from './pages/loginPage';
 import { AdminDashboardPage } from './pages/adminDashboardPage';
 import { ReportsPage } from './pages/reportsPage';
@@ -56,5 +57,44 @@ test.describe('JobSafe native — Near Miss report', () => {
     const form = new NearMissReportPage(screen);
     await form.expectRequiredWhenEmpty(form.incidentTimeInput, /This field is required/i);
     await form.expectRequiredWhenEmpty(form.titleInput, /This field is required/i);
+  });
+
+  test('creates a Near Miss report (manual Severity + Employee signature) & save it as draft', async ({ screen }) => {
+    test.skip(!nativeEnv.runManual, 'Set RUN_MANUAL=1 to run the manual Near Miss submit flow');
+    test.setTimeout(0); // the clock keeps running while we wait for input
+    const reportsPage = new ReportsPage(screen);
+    const form = new NearMissReportPage(screen);
+    await form.expectLoaded();
+
+    // Unique title so we can find this exact report in the list afterwards.
+    const title = uniqueTitle('Near Miss Draft');
+    await form.fillRequiredFields({ title, incidentTime: '10:00 AM' });
+    await form.waitForManualSeverityAndSignature();
+    await form.save();
+
+    // Back on the Reports list, the saved report should be there. Saving
+    // round-trips to the server, so allow extra time to land + list.
+    await reportsPage.expectLoaded(60_000);
+    await reportsPage.expectReportListed(title, 60_000);
+  });
+
+  test('creates a Near Miss report (manual Severity + Employee signature) & save and send it', async ({ screen }) => {
+    test.skip(!nativeEnv.runManual, 'Set RUN_MANUAL=1 to run the manual Near Miss submit flow');
+    test.setTimeout(0); // the clock keeps running while we wait for input
+    const reportsPage = new ReportsPage(screen);
+    const form = new NearMissReportPage(screen);
+    await form.expectLoaded();
+
+    // Unique title so we can find this exact report in the list afterwards.
+    const title = uniqueTitle('Near Miss Sent');
+    await form.fillRequiredFields({ title, incidentTime: '10:00 AM' });
+    await form.waitForManualSeverityAndSignature();
+    await form.saveAndSend();
+    await form.expectSentSuccessfully();
+
+    // Back on the Reports list, the sent report should be there. "Save and send"
+    // round-trips to the server, so allow extra time to land + list.
+    await reportsPage.expectLoaded(60_000);
+    await reportsPage.expectReportListed(title, 60_000);
   });
 });
