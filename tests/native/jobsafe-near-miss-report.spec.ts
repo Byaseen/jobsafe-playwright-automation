@@ -57,12 +57,4 @@ test.describe('JobSafe native — Near Miss report', () => {
     await form.expectRequiredWhenEmpty(form.incidentTimeInput, /This field is required/i);
     await form.expectRequiredWhenEmpty(form.titleInput, /This field is required/i);
   });
-
-  // NOTE: selecting "Severity Level" is not automated. It's a below-the-fold,
-  // non-accessible dropdown (only a StaticText label is exposed, no control), and
-  // this tooling has no reliable way to reach it: node bounds are fixed document
-  // coordinates (so a locator tap always aims off-screen), the only scroll
-  // primitive (swipe) is inertial/non-deterministic on this device, and the
-  // lower-level gesture API is rejected by the WDA backend. Revisit if the app
-  // exposes the control accessibly or the framework gains a momentum-free scroll.
 });
