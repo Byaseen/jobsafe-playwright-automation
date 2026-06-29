@@ -1,9 +1,22 @@
+/**
+ * JobSafe web — login smoke test.
+ */
 import { test } from '@playwright/test';
-import { login } from '../utils/login';
+import { LoginPage } from './pages/loginPage';
+import { env } from '../utils/env';
 
-// 💡 Tell Playwright to ignore storageState.json ONLY for this test file
+// Ignore any saved storageState for this smoke test — always log in fresh.
 test.use({ storageState: { cookies: [], origins: [] } });
 
-test('TC01 - Login', async ({ page }) => {
-  await login(page);
+const hasCreds = Boolean(env.email && env.password);
+
+test.describe('JobSafe web — Login smoke', () => {
+  test.skip(!hasCreds, 'Missing USER_EMAIL or USER_PASSWORD');
+
+  test('TC01 - logs in successfully', async ({ page }) => {
+    const login = new LoginPage(page);
+    await login.goto();
+    await login.login(env.email, env.password);
+    await login.expectReachedHome();
+  });
 });

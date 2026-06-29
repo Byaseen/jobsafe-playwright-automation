@@ -1,26 +1,29 @@
-// spec: change-password-test-plan.md
-// seed: tests/seed.spec.ts
-
+/**
+ * JobSafe web — change / reset password flow.
+ */
 import { test, expect } from '@playwright/test';
 import { ChangePasswordPage } from './pages/changePasswordPage';
 import { LoginPage } from './pages/loginPage';
+import { ContactUsModal } from './pages/components/contactUsModal';
 import { env } from '../utils/env';
 
 const resetCode = process.env.CHANGE_PASSWORD_CODE;
 const newPassword = process.env.NEW_PASSWORD ?? 'Password1!';
 const invalidCode = '000000';
 
-test.describe('Change Password flow', () => {
-  test('Verify Change password page', async ({ page }) => {
-    const changePage = new ChangePasswordPage(page);
-    await changePage.goto();
-    await changePage.expectPageVisible();
-    await expect(changePage.resetNowButton).toBeDisabled();
+test.describe('JobSafe web — Change Password', () => {
+  test.beforeEach(async ({ page }) => {
+    await new ChangePasswordPage(page).goto();
   });
 
-  test('Verify form inputs', async ({ page }) => {
+  test('renders the change-password page with Reset disabled', async ({ page }) => {
     const changePage = new ChangePasswordPage(page);
-    await changePage.goto();
+    await changePage.expectLoaded();
+    await changePage.expectResetDisabled();
+  });
+
+  test('accepts input in the code and password fields', async ({ page }) => {
+    const changePage = new ChangePasswordPage(page);
 
     await changePage.codeInput.pressSequentially('123456', { delay: 100 });
     await expect(changePage.codeInput).toHaveValue('123456');
@@ -32,112 +35,68 @@ test.describe('Change Password flow', () => {
     await expect(changePage.confirmPasswordInput).toHaveValue(newPassword);
   });
 
-  test('Verify required field validation and password mismatch', async ({ page }) => {
+  test('shows required-field and password-mismatch validation', async ({ page }) => {
     const changePage = new ChangePasswordPage(page);
-    await changePage.goto();
 
     await changePage.codeInput.focus();
     await page.keyboard.press('Tab');
-    await expect(page.getByText('Code is required!', { exact: true })).toBeVisible();
+    await changePage.expectCodeRequiredError();
 
     await changePage.newPasswordInput.focus();
     await page.keyboard.press('Tab');
-    await expect(page.getByText('Password is required!', { exact: true })).toBeVisible();
+    await changePage.expectPasswordRequiredError();
 
     await changePage.fillNewPassword(newPassword);
     await changePage.fillConfirmPassword(`${newPassword}x`);
     await page.keyboard.press('Tab');
-    await expect(page.getByText('Password confirmation does not match', { exact: true })).toBeVisible();
+    await changePage.expectMismatchError();
   });
 
-  test('Verify trying wrong code', async ({ page }) => {
+  test('a wrong code is rejected with an inline error', async ({ page }) => {
     const changePage = new ChangePasswordPage(page);
-    await changePage.goto();
-
-    await changePage.fillCode(invalidCode);
-    await changePage.fillNewPassword(newPassword);
-    await changePage.fillConfirmPassword(newPassword);
-
-    await expect(changePage.resetNowButton).toBeEnabled();
+    await changePage.fillForm({ code: invalidCode, newPassword });
+    await changePage.expectResetEnabled();
     await changePage.clickResetNow();
-    await expect(changePage.invalidCodeError).toBeVisible();
+    await changePage.expectInvalidCode();
   });
 
-  test('Verify Wrong code page', async ({ page }) => {
+  test('a wrong code offers to request another code', async ({ page }) => {
     const changePage = new ChangePasswordPage(page);
-    await changePage.goto();
-
-    await changePage.fillCode(invalidCode);
-    await changePage.fillNewPassword(newPassword);
-    await changePage.fillConfirmPassword(newPassword);
+    await changePage.fillForm({ code: invalidCode, newPassword });
     await changePage.clickResetNow();
-
-    await expect(changePage.invalidCodeError).toBeVisible();
-    await expect(changePage.requestAnotherCodeLink).toBeVisible();
+    await changePage.expectInvalidCode();
+    await changePage.expectRequestAnotherCodeVisible();
   });
 
-  test('Verify Request another code link', async ({ page }) => {
+  test('"Still need help? - Contact us" opens the contact-us modal', async ({ page }) => {
     const changePage = new ChangePasswordPage(page);
-    await changePage.goto();
-
-    await changePage.fillCode(invalidCode);
-    await changePage.fillNewPassword(newPassword);
-    await changePage.fillConfirmPassword(newPassword);
-    await changePage.clickResetNow();
-
-    await expect(changePage.requestAnotherCodeLink).toBeVisible();
-  });
-
-  test('Verify "Still need help? - Contact us" link', async ({ page }) => {
-    const changePage = new ChangePasswordPage(page);
-    await changePage.goto();
     await expect(changePage.contactSupportLink).toBeVisible();
-    await changePage.clickContactSupport();
-    await expect(page.locator('div').filter({ hasText: 'Need help? - Contact usFor' })).toBeVisible();
+    await changePage.openHelp();
+    await new ContactUsModal(page).expectOpen();
   });
 
-  test('Verify Reset the password', async ({ page }) => {
-    test.skip(!resetCode, 'CHANGE_PASSWORD_CODE environment variable must be set for the reset flow');
-
+  test('resets the password with a valid code', async ({ page }) => {
+    test.skip(!resetCode, 'CHANGE_PASSWORD_CODE must be set for the reset flow');
     const changePage = new ChangePasswordPage(page);
-    await changePage.goto();
-
-    await changePage.fillCode(resetCode!);
-    await changePage.fillNewPassword(newPassword);
-    await changePage.fillConfirmPassword(newPassword);
-
-    await expect(changePage.resetNowButton).toBeEnabled();
+    await changePage.fillForm({ code: resetCode!, newPassword });
+    await changePage.expectResetEnabled();
     await changePage.clickResetNow();
-
-    await expect(page.getByText(/password.*(changed|reset|updated)|success/i)).toBeVisible();
-    await expect(page).not.toHaveURL(/change-password/);
+    await changePage.expectResetSucceeded();
   });
 
-  test('Verify that user is unable to login using old password', async ({ page }) => {
-    test.skip(!resetCode, 'CHANGE_PASSWORD_CODE environment variable must be set for the reset flow');
-
-    const loginPage = new LoginPage(page);
-    await loginPage.goto();
-
-    await loginPage.fillEmail(env.email);
-    await loginPage.fillPassword(env.password);
-    await loginPage.submit();
-
-    await expect(page).toHaveURL(/login/);
-    await expect(page.getByText(/incorrect|invalid|failed|wrong/i)).toBeVisible();
+  test('the old password no longer works after reset', async ({ page }) => {
+    test.skip(!resetCode, 'CHANGE_PASSWORD_CODE must be set for the reset flow');
+    const login = new LoginPage(page);
+    await login.goto();
+    await login.login(env.email, env.password);
+    await login.expectRejected();
   });
 
-  test('Verify login with the new password', async ({ page }) => {
-    test.skip(!resetCode, 'CHANGE_PASSWORD_CODE environment variable must be set for the reset flow');
-
-    const loginPage = new LoginPage(page);
-    await loginPage.goto();
-
-    await loginPage.fillEmail(env.email);
-    await loginPage.fillPassword(newPassword);
-    await loginPage.submit();
-
-    await expect(page).toHaveURL(/app\/home/);
-    await expect(page.locator('#job_tabs')).toBeVisible();
+  test('the new password works after reset', async ({ page }) => {
+    test.skip(!resetCode, 'CHANGE_PASSWORD_CODE must be set for the reset flow');
+    const login = new LoginPage(page);
+    await login.goto();
+    await login.login(env.email, newPassword);
+    await login.expectReachedHome();
   });
 });

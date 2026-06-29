@@ -1,64 +1,54 @@
+/**
+ * JobSafe web — forgot password flow.
+ */
 import { test, expect } from '@playwright/test';
 import { ForgotPasswordPage } from './pages/forgotPasswordPage';
+import { ContactUsModal } from './pages/components/contactUsModal';
 
-test.describe('Forgot password flow', () => {
-    test('forgot password page renders core elements', async ({ page }) => {
-        const forgot = new ForgotPasswordPage(page);
-        await forgot.goto();
-        await expect(page.getByRole('heading', { name: 'Forgotten password' })).toBeVisible();
-        await expect(page.getByRole('heading', { name: 'Simply provide us with your Email:' })).toBeVisible();
-        await expect(page.getByPlaceholder('Email')).toBeVisible();
-        await expect(page.getByRole('button', { name: 'Next' })).toBeDisabled();
-        await expect(page.getByRole('button', { name: 'Go back to previous screen' })).toBeVisible();
-        await expect(page.getByRole('button', { name: 'back', exact: true })).toBeVisible();
-    });
+test.describe('JobSafe web — Forgot password', () => {
+  test.beforeEach(async ({ page }) => {
+    await new ForgotPasswordPage(page).goto();
+  });
 
-    test('empty email shows required validation', async ({ page }) => {
-        const forgot = new ForgotPasswordPage(page);
-        await forgot.goto();
-        await page.getByPlaceholder('Email').focus();
-        await page.getByRole('button', { name: 'back', exact: true }).click();
-        await forgot.goto();
-        await page.getByPlaceholder('Email').focus();
-        await page.getByPlaceholder('Email').press('Tab');
-        await expect(page.locator('text=Email is required!')).toBeVisible();
-        await expect(page.getByRole('button', { name: 'Next' })).toBeDisabled();
-    });
+  test('renders core elements with Next disabled', async ({ page }) => {
+    const forgot = new ForgotPasswordPage(page);
+    await forgot.expectLoaded();
+    await forgot.expectNextDisabled();
+  });
 
-    test('valid email enables Next and advances flow', async ({ page }) => {
-        const forgot = new ForgotPasswordPage(page);
-        await forgot.goto();
-        await forgot.fillEmail('test@test.com');
-        await expect(page.locator('text=Email is invalid!')).toHaveCount(0);
-        await expect(page.getByRole('button', { name: 'Next' })).toBeEnabled();
-        await forgot.clickNext();
-        await expect(page).toHaveURL(/check-email-exists/);
-        await expect(page.getByRole('heading', { name: 'Thank you!' })).toBeVisible();
-    });
+  test('empty email shows required validation', async ({ page }) => {
+    const forgot = new ForgotPasswordPage(page);
+    await forgot.blurEmail();
+    await forgot.expectRequiredError();
+    await forgot.expectNextDisabled();
+  });
 
-    test('Valid email allows user to proceed', async ({ page }) => {
-        await page.getByPlaceholder('Email').fill('test@test.com');
-        await page.getByRole('button', { name: 'Next' }).click();
-        await expect(page).toHaveURL(/.*check-email-exists/);
-    });
+  test('valid email enables Next and advances to the thank-you page', async ({ page }) => {
+    const forgot = new ForgotPasswordPage(page);
+    await forgot.fillEmail('test@test.com');
+    await forgot.expectInvalidError(false);
+    await forgot.expectNextEnabled();
+    await forgot.clickNext();
+    await forgot.expectReachedThankYou();
+  });
 
-    test('Back to login link navigates to login page', async ({ page }) => {
-        await page.getByRole('button', { name: 'Go back to previous screen' }).click();
-        await expect(page).toHaveURL(/.*login/);
-    });
+  test('back to login navigates to the login page', async ({ page }) => {
+    const forgot = new ForgotPasswordPage(page);
+    await forgot.clickBack();
+    await expect(page).toHaveURL(/login/);
+  });
 
-    test('Need help button showing the need help contact us modal', async ({ page }) => {
-        await page.getByRole('banner').getByRole('button').click();
-        await expect(page.locator('div').filter({ hasText: 'Need help? - Contact usFor' })).toBeVisible();
-    });
+  test('help "?" icon opens the contact-us modal', async ({ page }) => {
+    const forgot = new ForgotPasswordPage(page);
+    await forgot.openHelp();
+    await new ContactUsModal(page).expectOpen();
+  });
 
-    test('Change passowrd button is working in forget password thankyou page', async ({ page }) => {
-        await page.getByPlaceholder('Email').fill('test@test.com');
-        await page.getByRole('button', { name: 'Next' }).click();
-        await expect(page).toHaveURL(/.*check-email-exists/);
-        await page.getByRole('button', { name: 'Change Password' }).click();
-        await expect(page).toHaveURL(/.*change-password/);
-
-    });
-
+  test('Change Password button on the thank-you page navigates to change-password', async ({ page }) => {
+    const forgot = new ForgotPasswordPage(page);
+    await forgot.requestReset('test@test.com');
+    await forgot.expectReachedThankYou();
+    await forgot.clickChangePassword();
+    await expect(page).toHaveURL(/change-password/);
+  });
 });

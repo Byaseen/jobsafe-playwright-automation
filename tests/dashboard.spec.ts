@@ -1,33 +1,30 @@
-import { test, expect } from '@playwright/test';
+/**
+ * JobSafe web — dashboard & navigation.
+ */
+import { test } from '@playwright/test';
 import { LoginPage } from './pages/loginPage';
-import { DashboardPage } from './pages/dashboardPage';
+import { HomePage } from './pages/homePage';
+import { env } from '../utils/env';
 
-test.describe('Dashboard and navigation', () => {
-  test('home dashboard loads after login', async ({ page }) => {
-    const email = process.env.USER_EMAIL;
-    const password = process.env.USER_PASSWORD;
-    test.skip(!email || !password, 'Missing USER_EMAIL or USER_PASSWORD');
+const hasCreds = Boolean(env.email && env.password);
+
+test.describe('JobSafe web — Dashboard and navigation', () => {
+  test.skip(!hasCreds, 'Missing USER_EMAIL or USER_PASSWORD');
+
+  test.beforeEach(async ({ page }) => {
     const login = new LoginPage(page);
-    const dashboard = new DashboardPage(page);
     await login.goto();
-    await login.fillEmail(email!);
-    await login.fillPassword(password!);
-    await login.submit();
-    await expect(page).toHaveURL(/app\/home/);
-    await expect(page.locator('#job_tabs')).toBeVisible({ timeout: 20000 });
+    await login.login(env.email, env.password);
+    await new HomePage(page).expectLoaded();
+  });
+
+  test('home dashboard loads after login', async ({ page }) => {
+    await new HomePage(page).expectLoaded();
   });
 
   test('My Reports tab navigates to incident reports', async ({ page }) => {
-    const email = process.env.USER_EMAIL;
-    const password = process.env.USER_PASSWORD;
-    test.skip(!email || !password, 'Missing USER_EMAIL or USER_PASSWORD');
-    const login = new LoginPage(page);
-    const dashboard = new DashboardPage(page);
-    await login.goto();
-    await login.fillEmail(email!);
-    await login.fillPassword(password!);
-    await login.submit();
-    await dashboard.clickMyReports();
-    await expect(page).toHaveURL(/incident-reports/);
+    const home = new HomePage(page);
+    await home.openMyReports();
+    await home.expectReachedReports();
   });
 });

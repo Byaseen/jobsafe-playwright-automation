@@ -1,15 +1,17 @@
+/**
+ * JobSafe web — route protection.
+ */
 import { test, expect } from '@playwright/test';
+import { LoginPage } from './pages/loginPage';
 
-test.describe('Route protection', () => {
-  test('unauthenticated access to home redirects to login', async ({ page }) => {
-    await page.goto('/app/home');
-    await expect(page).toHaveURL(/login/);
-    await expect(page.getByRole('heading', { name: 'Login' })).toBeVisible();
-  });
+const protectedRoutes = ['/app/home', '/app/settings/incident-reports'];
 
-  test('unauthenticated access to incident reports redirects to login', async ({ page }) => {
-    await page.goto('/app/settings/incident-reports');
-    await expect(page).toHaveURL(/login/);
-    await expect(page.getByRole('heading', { name: 'Login' })).toBeVisible();
-  });
+test.describe('JobSafe web — Route protection', () => {
+  for (const route of protectedRoutes) {
+    test(`unauthenticated access to ${route} redirects to login`, async ({ page }) => {
+      await page.goto(route);
+      await expect(page).toHaveURL(/login/);
+      await expect(new LoginPage(page).heading).toBeVisible();
+    });
+  }
 });
