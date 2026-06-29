@@ -12,10 +12,14 @@ export class LoginPage {
   // Inputs + primary actions.
   readonly email: Locator;
   readonly password: Locator;
+  /** Eye icon that toggles the password field between masked and visible. */
+  readonly passwordToggle: Locator;
+  /** The underlying <input> element inside the password-input component — used for type assertions. */
+  readonly passwordNativeInput: Locator;
   readonly loginButton: Locator;
   readonly forgotLink: Locator;
   readonly createAccountButton: Locator;
-  /** The "?" support button in the top banner that opens the contact-us modal. */
+  /** The "?" support button in the header toolbar that opens the contact-us modal. */
   readonly helpButton: Locator;
   // Validation messages.
   readonly emailRequiredError: Locator;
@@ -31,10 +35,12 @@ export class LoginPage {
     this.methodsHeading = page.getByRole('heading', { name: 'Choose one of the following methods:' });
     this.email = page.getByPlaceholder('Email');
     this.password = page.getByPlaceholder('Choose a password');
+    this.passwordToggle = page.locator('password-input').getByRole('img');
+    this.passwordNativeInput = page.locator('password-input input');
     this.loginButton = page.getByRole('button', { name: 'Login' });
     this.forgotLink = page.getByRole('link', { name: 'Forgot Password?' });
     this.createAccountButton = page.getByRole('button', { name: 'No Account? Create an account' });
-    this.helpButton = page.getByRole('banner').getByRole('button');
+    this.helpButton = page.getByTestId('header-help-button').getByRole('button');
     this.emailRequiredError = page.getByText('Email is required!', { exact: true });
     this.passwordRequiredError = page.getByText('Password is required!', { exact: true });
     this.emailInvalidError = page.getByText('Email is invalid!', { exact: true });
@@ -86,6 +92,10 @@ export class LoginPage {
     await this.helpButton.click();
   }
 
+  async togglePasswordVisibility() {
+    await this.passwordToggle.click();
+  }
+
   // ─── Assertions ────────────────────────────────────────────────
   async expectLoaded() {
     await expect(this.heading).toBeVisible({ timeout: 10_000 });
@@ -100,6 +110,18 @@ export class LoginPage {
   /** The Login button stays disabled until the form is valid. */
   async expectLoginDisabled() {
     await expect(this.loginButton).toBeDisabled({ timeout: 10_000 });
+  }
+
+  async expectLoginEnabled() {
+    await expect(this.loginButton).toBeEnabled({ timeout: 10_000 });
+  }
+
+  async expectPasswordMasked() {
+    await expect(this.passwordNativeInput).toHaveAttribute('type', 'password');
+  }
+
+  async expectPasswordVisible() {
+    await expect(this.passwordNativeInput).toHaveAttribute('type', 'text');
   }
 
   async expectInvalidEmailError() {
