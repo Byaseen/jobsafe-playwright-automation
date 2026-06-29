@@ -41,39 +41,40 @@ test.describe('JobSafe native — Near Miss report', () => {
     await typeModal.selectNearMiss();
   });
 
-  test('Near Miss report form opens with its fields', async ({ screen }) => {
-    await new NearMissReportPage(screen).expectLoaded();
-  });
-
-  // The required fields (no "(Optional)" label) show their required message once
-  // tapped and left empty. Title and Incident Time are the empty required text
-  // fields — Date, Employee, Incident Date and Report Type are pre-filled.
-  //
-  // Each is its own test so beforeEach re-opens a fresh form (scrolled to the
-  // top): in one combined test, tapping the first field scrolls the form and
-  // pushes the other off-screen, so the second tap misses.
-
-  test('Check required field validation inside of the Near miss form', async ({ screen }) => {
-    const form = new NearMissReportPage(screen);
-    await form.expectRequiredWhenEmpty(form.incidentTimeInput, /This field is required/i);
-    await form.expectRequiredWhenEmpty(form.titleInput, /This field is required/i);
-  });
-
-  test('creates a Near Miss report (automated Employee signature) & save it as draft', async ({ screen }) => {
+  // Reaching the Near Miss form is expensive (login → My Reports → "+" → pick
+  // type, all in beforeEach), so the checks that act on one freshly-opened form
+  // share a single navigation and run as labelled test.step()s in sequence:
+  // assert it loaded, exercise required-field validation (which only taps/blurs
+  // empty fields, leaving them empty), then fill, sign, and save as a draft.
+  // Saving leaves the form for the Reports list, so this is the last step.
+  test('Near Miss form: opens, validates required fields, and saves a draft', async ({ screen }) => {
     const reportsPage = new ReportsPage(screen);
     const form = new NearMissReportPage(screen);
-    await form.expectLoaded();
 
-    // Unique title so we can find this exact report in the list afterwards.
-    const title = uniqueTitle('Near Miss Draft');
-    await form.fillRequiredFields({ title, incidentTime: '10:00 AM' });
-    await form.signEmployeeSignature();
-    await form.save();
+    await test.step('form opens with its fields', async () => {
+      await form.expectLoaded();
+    });
 
-    // Back on the Reports list, the saved report should be there. Saving
-    // round-trips to the server, so allow extra time to land + list.
-    await reportsPage.expectLoaded(60_000);
-    await reportsPage.expectReportListed(title, 60_000);
+    // Title and Incident Time are the empty required text fields — Date,
+    // Employee, Incident Date and Report Type are pre-filled. Each shows its
+    // required message once tapped and left empty.
+    await test.step('required fields show validation when empty', async () => {
+      await form.expectRequiredWhenEmpty(form.incidentTimeInput, /This field is required/i);
+      await form.expectRequiredWhenEmpty(form.titleInput, /This field is required/i);
+    });
+
+    await test.step('fill, sign, and save as draft', async () => {
+      // Unique title so we can find this exact report in the list afterwards.
+      const title = uniqueTitle('Near Miss Draft');
+      await form.fillRequiredFields({ title, incidentTime: '10:00 AM' });
+      await form.signEmployeeSignature();
+      await form.save();
+
+      // Back on the Reports list, the saved report should be there. Saving
+      // round-trips to the server, so allow extra time to land + list.
+      await reportsPage.expectLoaded(60_000);
+      await reportsPage.expectReportListed(title, 60_000);
+    });
   });
 
   test('creates a Near Miss report (automated Employee signature) & save and send it', async ({ screen }) => {

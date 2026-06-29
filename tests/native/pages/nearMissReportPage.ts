@@ -62,7 +62,7 @@ export class NearMissReportPage {
     this.titleInput = screen.getByType('TextField').nth(4);
     // Employee Signature is the first "Sign" button; Manager Signature (Optional)
     // is the second. The modal's title and DONE/CLEAR/CANCEL come from a dump.
-    this.employeeSignButton = screen.getByRole('button', { name: 'Sign' }).first();
+    this.employeeSignButton = screen.getByRole('button', { name: 'Sign' }).nth(-2);
     this.signatureModalTitle = screen.getByText(/Add a Signature/i);
     this.signatureDoneButton = screen.getByRole('button', { name: 'DONE' });
     this.signatureClearButton = screen.getByRole('button', { name: 'CLEAR' });
