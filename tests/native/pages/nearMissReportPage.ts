@@ -44,6 +44,7 @@ export class NearMissReportPage {
   // Primary actions.
   readonly saveButton: Locator;
   readonly saveAndSendButton: Locator;
+  readonly RequiredFieldMessage : Locator;
 
   constructor(screen: Screen) {
     this.screen = screen;
@@ -74,6 +75,7 @@ export class NearMissReportPage {
     // Two "Save" buttons exist (witness + bottom); the bottom one is last.
     this.saveButton = screen.getByRole('button', { name: 'Save' }).last();
     this.saveAndSendButton = screen.getByRole('button', { name: 'Save and send' });
+    this.RequiredFieldMessage = screen.getByText(/This field is required/i);
   }
 
   // ─── Actions ───────────────────────────────────────────────────
@@ -203,6 +205,10 @@ export class NearMissReportPage {
    *  Sending round-trips to the server, so the timeout is generous. */
   async expectSentSuccessfully(timeout = 60_000) {
     await expect(this.screen.getByText(/sent successfully/i)).toBeVisible({ timeout });
+  }
+
+  expectRequiredFieldsValidationErrorsShown(numberOfFields: number) {
+    expect(this.RequiredFieldMessage).toHaveCount(numberOfFields, { timeout: 10_000 });
   }
 
   /** The Near Miss creation screen is shown with its key fields. */

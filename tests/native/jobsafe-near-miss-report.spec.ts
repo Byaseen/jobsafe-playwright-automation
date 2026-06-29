@@ -63,6 +63,11 @@ test.describe('JobSafe native — Near Miss report', () => {
       await form.expectRequiredWhenEmpty(form.titleInput, /This field is required/i);
     });
 
+    await test.step('required fields show validation when empty after clicking save buttons', async () => {
+      await form.save();
+      await form.expectRequiredFieldsValidationErrorsShown(4);
+    });
+
     await test.step('fill, sign, and save as draft', async () => {
       // Unique title so we can find this exact report in the list afterwards.
       const title = uniqueTitle('Near Miss Draft');
