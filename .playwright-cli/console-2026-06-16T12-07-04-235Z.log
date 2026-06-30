@@ -1,4 +1,0 @@
-[    2628ms] [LOG] User general data in app component:  0 @ https://app.tst.jobsafe.cloud/chunk-IQ6X5QFI.js:1
-[    2631ms] [LOG] [BurgerMenu] Adding departments item, url: /app/settings/departments @ https://app.tst.jobsafe.cloud/chunk-IQ6X5QFI.js:1
-[   29231ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://cognito-idp.eu-west-1.amazonaws.com/:0
-[   29379ms] [ERROR] Error Logged in Tue Jun 16 2026 15:07:33 GMT+0300 (Eastern European Summer Time) @ https://app.tst.jobsafe.cloud/chunk-A673CICY.js:4

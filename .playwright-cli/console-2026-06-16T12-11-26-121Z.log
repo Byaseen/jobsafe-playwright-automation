@@ -1,5 +1,0 @@
-[    2203ms] [LOG] User general data in app component:  0 @ https://app.tst.jobsafe.cloud/chunk-IQ6X5QFI.js:1
-[    2204ms] [LOG] [BurgerMenu] Adding departments item, url: /app/settings/departments @ https://app.tst.jobsafe.cloud/chunk-IQ6X5QFI.js:1
-[    3357ms] [INFO] Slow network is detected. See https://www.chromestatus.com/feature/5636954674692096 for more details. Fallback font will be used while loading: https://app.tst.jobsafe.cloud/assets/fonts/SemiBold/Muli-SemiBold.woff2 @ https://app.tst.jobsafe.cloud/login:0
-[    3835ms] [INFO] Slow network is detected. See https://www.chromestatus.com/feature/5636954674692096 for more details. Fallback font will be used while loading: https://app.tst.jobsafe.cloud/assets/fonts/ExtraBold/Muli-ExtraBold.woff2 @ https://app.tst.jobsafe.cloud/login:0
-[    3835ms] [INFO] Slow network is detected. See https://www.chromestatus.com/feature/5636954674692096 for more details. Fallback font will be used while loading: https://app.tst.jobsafe.cloud/assets/fonts/Regular/Muli-Regular.woff2 @ https://app.tst.jobsafe.cloud/login:0
