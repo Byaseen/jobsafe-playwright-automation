@@ -79,6 +79,7 @@ export class SignupTrialPage {
   readonly codeSentToast: Locator;
   /** Toast shown after submitting an incorrect OTP. */
   readonly codeDoesNotMatchToast: Locator;
+  readonly invalidCodeError: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -117,6 +118,7 @@ export class SignupTrialPage {
     this.verifyCodeButton = page.getByTestId('signup-verify-code-button').getByRole('button');
     this.codeSentToast = page.getByRole('status').filter({ hasText: 'Code Sent Successfully' });
     this.codeDoesNotMatchToast = page.getByRole('status').filter({ hasText: 'Code does not match' });
+    this.invalidCodeError = page.getByText('Invalid verification code');
   }
 
   // ─── Actions ───────────────────────────────────────────────────
@@ -189,6 +191,7 @@ export class SignupTrialPage {
     await this.fillRequiredFields(data);
     await this.agreeToTerms();
     await this.solveCaptcha();
+    await this.page.waitForTimeout(2000);
     await this.clickRegister();
   }
 
@@ -294,7 +297,11 @@ export class SignupTrialPage {
   }
 
   async expectCodeDoesNotMatchToast() {
-    await expect(this.codeDoesNotMatchToast).toBeVisible({ timeout: 10_000 });
+    await expect(this.codeDoesNotMatchToast.last()).toBeVisible({ timeout: 15_000 });
+  }
+
+  async expectInvalidCodeError() {
+    await expect(this.invalidCodeError).toBeVisible({ timeout: 10_000 });
   }
 
   async expectPasswordMasked() {

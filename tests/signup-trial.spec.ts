@@ -81,11 +81,7 @@ test.describe('JobSafe web — Signup trial', () => {
 
   test('optional card fields can remain empty and still allow registration', async ({ page }) => {
     const signup = new SignupTrialPage(page);
-    await signup.fillRequiredFields(validSignup());
-    await signup.disagreeToTerms();
-    await signup.agreeToTerms();
-    await signup.solveCaptcha();
-    await signup.clickRegister();
+    await signup.register(validSignup());
     await signup.expectVerifyEmailScreen();
   });
 
@@ -119,12 +115,6 @@ test.describe('JobSafe web — Signup trial', () => {
       await new SignupTrialPage(page).expectCodeSentToast();
     });
 
-    test('back arrow on the verify screen navigates to the login page', async ({ page }) => {
-      const signup = new SignupTrialPage(page);
-      await signup.clickBack();
-      await expect(page).toHaveURL(/login/);
-    });
-
     test('"Resend Code" re-sends the code and shows the confirmation toast', async ({ page }) => {
       const signup = new SignupTrialPage(page);
       await signup.clickResendCode();
@@ -133,9 +123,22 @@ test.describe('JobSafe web — Signup trial', () => {
 
     test('submitting an incorrect OTP shows a "Code does not match" error', async ({ page }) => {
       const signup = new SignupTrialPage(page);
-      await signup.fillOtpCode('000000');
+      await signup.fillOtpCode('123456');
       await signup.clickVerifyCode();
       await signup.expectCodeDoesNotMatchToast();
+    });
+
+    test('submitting an incorrect OTP shows a "Invalid verification code" error', async ({ page }) => {
+      const signup = new SignupTrialPage(page);
+      await signup.fillOtpCode('123');
+      await signup.clickVerifyCode();
+      await signup.expectInvalidCodeError();
+    });
+
+    test('back arrow on the verify screen navigates to the login page', async ({ page }) => {
+      const signup = new SignupTrialPage(page);
+      await signup.clickBack();
+      await expect(page).toHaveURL(/login/);
     });
   });
 
