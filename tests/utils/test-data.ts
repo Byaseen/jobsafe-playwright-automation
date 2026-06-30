@@ -30,8 +30,16 @@ export const passwordMismatchSignup = (): SignupTrialData => {
   return { ...baseSignup, email, confirmEmail: email, confirmPassword: 'Mismatch123!' };
 };
 
-/** A malformed email whose confirm field also differs — triggers both the
- *  "Email is invalid!" and "Emails are not matching" errors. */
+/** Malformed email where both fields match — isolates the "Email is invalid!"
+ *  error without the "Emails are not matching" error appearing alongside it. */
+export const invalidEmailFormatSignup = (): SignupTrialData => ({
+  ...baseSignup,
+  email: 'userexample.com',
+  confirmEmail: 'userexample.com',
+});
+
+/** Malformed email with a mismatched confirm — when both errors would fire, only
+ *  "Emails are not matching" is visible, so this fixture targets that error alone. */
 export const invalidEmailSignup = (): SignupTrialData => ({
   ...baseSignup,
   email: 'userexample.com',

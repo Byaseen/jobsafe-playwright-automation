@@ -24,7 +24,9 @@ export interface SignupTrialData {
 export class SignupTrialPage {
   readonly page: Page;
   readonly backButton: Locator;
-  // Required fields.
+  // Required fields. Email and password fields use data-testid → locator('input')
+  // because those are custom elements (email-field, password-input) with duplicate
+  // placeholders — getByPlaceholder().first()/.last() is fragile by index.
   readonly firstName: Locator;
   readonly surname: Locator;
   readonly email: Locator;
@@ -33,6 +35,10 @@ export class SignupTrialPage {
   readonly companyName: Locator;
   readonly password: Locator;
   readonly confirmPassword: Locator;
+  /** Eye icon on the password field — toggles masked ↔ visible. */
+  readonly passwordToggle: Locator;
+  /** Eye icon on the confirm-password field — toggles masked ↔ visible. */
+  readonly confirmPasswordToggle: Locator;
   // Optional card fields.
   readonly nameOnCard: Locator;
   readonly cardNumber: Locator;
@@ -40,7 +46,15 @@ export class SignupTrialPage {
   readonly cvv: Locator;
   // Misc controls + actions.
   readonly countryValue: Locator;
+  /** The dropdown button inside the country selector that opens the search dialog. */
+  readonly countryDropdown: Locator;
+  /** The dialog opened by the country selector. */
+  readonly countryDialog: Locator;
   readonly agreementSwitch: Locator;
+  /** "Terms & Conditions" anchor inside the terms row. */
+  readonly termsLink: Locator;
+  /** The "?" support button in the page header that opens the contact-us modal. */
+  readonly helpButton: Locator;
   readonly registerButton: Locator;
   readonly goBackButton: Locator;
   // Validation / outcome messages.
@@ -48,32 +62,61 @@ export class SignupTrialPage {
   readonly emailsNotMatchingError: Locator;
   readonly passwordMismatchError: Locator;
   readonly emailInUseError: Locator;
+  // ─── Email Verification screen (appears in-place after a successful signup) ──
+  /** Kept for backwards-compat with existing tests — prefer verifyHeading. */
   readonly verifyEmailMessage: Locator;
+  /** h1 on the verify-email view. */
+  readonly verifyHeading: Locator;
+  /** Instructions paragraph on the verify-email view. */
+  readonly verifyInstructions: Locator;
+  /** Number input for the 6-digit OTP code. */
+  readonly otpInput: Locator;
+  /** "Resend Code" span that triggers a new code to be sent. */
+  readonly resendCodeButton: Locator;
+  /** "Verify Code" submit button — targets the inner native button. */
+  readonly verifyCodeButton: Locator;
+  /** Toast shown immediately after signup or after resending the code. */
+  readonly codeSentToast: Locator;
+  /** Toast shown after submitting an incorrect OTP. */
+  readonly codeDoesNotMatchToast: Locator;
 
   constructor(page: Page) {
     this.page = page;
-    this.backButton = page.getByRole('button', { name: 'back' });
+    this.backButton = page.getByRole('button', { name: 'back', exact: true });
     this.firstName = page.getByPlaceholder('First Name');
     this.surname = page.getByPlaceholder('Surname');
-    this.email = page.getByPlaceholder('Email address').first();
-    this.confirmEmail = page.getByPlaceholder('Email address').last();
+    this.email = page.getByTestId('signup-email-field').locator('input');
+    this.confirmEmail = page.getByTestId('signup-email-confirm-field').locator('input');
     this.phoneNumber = page.getByPlaceholder('Phone Number');
     this.companyName = page.getByPlaceholder('Company Name');
-    this.password = page.getByPlaceholder('Choose a password').first();
-    this.confirmPassword = page.getByPlaceholder('Choose a password').last();
+    this.password = page.getByTestId('signup-password-field').locator('input');
+    this.confirmPassword = page.getByTestId('signup-password-confirm-field').locator('input');
+    this.passwordToggle = page.getByTestId('signup-password-field').getByRole('img');
+    this.confirmPasswordToggle = page.getByTestId('signup-password-confirm-field').getByRole('img');
     this.nameOnCard = page.getByPlaceholder('Name on Card');
     this.cardNumber = page.getByPlaceholder('Card Number');
     this.expiryDate = page.getByPlaceholder('Expiry Date (MM/YYYY)');
     this.cvv = page.getByPlaceholder('Card Verification Value (CVV)');
     this.countryValue = page.locator('text=United Kingdom');
+    this.countryDropdown = page.getByTestId('signup-country-field').getByRole('button');
+    this.countryDialog = page.getByRole('dialog');
     this.agreementSwitch = page.getByRole('switch');
+    this.termsLink = page.getByRole('link', { name: 'Terms & Conditions' });
+    this.helpButton = page.getByTestId('header-help-button').getByRole('button');
     this.registerButton = page.getByRole('button', { name: 'Register & start your FREE trial' });
     this.goBackButton = page.getByRole('button', { name: 'Go back to previous screen' });
     this.emailInvalidError = page.getByText('Email is invalid!', { exact: true });
     this.emailsNotMatchingError = page.getByText('Emails are not matching');
     this.passwordMismatchError = page.getByText('Password confirmation does not match');
     this.emailInUseError = page.getByText('Email already in use. Please');
-    this.verifyEmailMessage = page.locator('div').filter({ hasText: "Verify your email addressWe'" }).first();
+    this.verifyEmailMessage = page.getByRole('heading', { name: 'Verify your email address' });
+    this.verifyHeading = page.getByRole('heading', { name: 'Verify your email address' });
+    this.verifyInstructions = page.getByText("We've sent a 6-digit code to your email");
+    this.otpInput = page.getByTestId('signup-otp-field').locator('input');
+    this.resendCodeButton = page.getByTestId('signup-resend-code-button');
+    this.verifyCodeButton = page.getByTestId('signup-verify-code-button').getByRole('button');
+    this.codeSentToast = page.getByRole('status').filter({ hasText: 'Code Sent Successfully' });
+    this.codeDoesNotMatchToast = page.getByRole('status').filter({ hasText: 'Code does not match' });
   }
 
   // ─── Actions ───────────────────────────────────────────────────
@@ -153,6 +196,38 @@ export class SignupTrialPage {
     await this.goBackButton.click();
   }
 
+  async clickBack() {
+    await this.backButton.click();
+  }
+
+  async openHelp() {
+    await this.helpButton.click();
+  }
+
+  async openCountrySelector() {
+    await this.countryDropdown.click();
+  }
+
+  async togglePasswordVisibility() {
+    await this.passwordToggle.click();
+  }
+
+  async toggleConfirmPasswordVisibility() {
+    await this.confirmPasswordToggle.click();
+  }
+
+  async fillOtpCode(code: string) {
+    await this.otpInput.fill(code);
+  }
+
+  async clickVerifyCode() {
+    await this.verifyCodeButton.click();
+  }
+
+  async clickResendCode() {
+    await this.resendCodeButton.click();
+  }
+
   // ─── Assertions ────────────────────────────────────────────────
   async expectLoaded() {
     await expect(this.firstName).toBeVisible({ timeout: 10_000 });
@@ -175,9 +250,18 @@ export class SignupTrialPage {
     await expect(this.page.getByText('This field is required')).toHaveCount(count, { timeout: 10_000 });
   }
 
+  /** Asserts the "Email is invalid!" error shown when the format is wrong but
+   *  both email fields match (no mismatch error obscuring it). */
+  async expectInvalidEmailFormatError() {
+    await expect(this.emailInvalidError).toHaveCount(2, { timeout: 10_000 });
+    await expect(this.page).toHaveURL(/signup-trial$/, { timeout: 10_000 });
+  }
+
+  /** Asserts the "Emails are not matching" error shown when the two email fields
+   *  differ. When a mismatch is present the invalid-format error is not visible,
+   *  so this method only checks the mismatch error. */
   async expectInvalidEmailErrors() {
-    await expect(this.emailInvalidError).toBeVisible({ timeout: 10_000 });
-    await expect(this.emailsNotMatchingError).toBeVisible({ timeout: 10_000 });
+    await expect(this.emailsNotMatchingError).toHaveCount(2, { timeout: 10_000 });
     await expect(this.page).toHaveURL(/signup-trial$/, { timeout: 10_000 });
   }
 
@@ -191,8 +275,54 @@ export class SignupTrialPage {
     await expect(this.page).toHaveURL(/signup-trial$/, { timeout: 10_000 });
   }
 
-  /** Signup succeeded and the email-verification instruction is shown. */
+  /** Signup succeeded: the verify-email heading is visible (quick gate check). */
   async expectVerifyEmailScreen() {
-    await expect(this.verifyEmailMessage).toBeVisible({ timeout: 15_000 });
+    await expect(this.verifyHeading).toBeVisible({ timeout: 30_000 });
+  }
+
+  /** Full structural check of the verify-email view. */
+  async expectVerifyEmailScreenLoaded() {
+    await expect(this.verifyHeading).toBeVisible({ timeout: 30_000 });
+    await expect(this.verifyInstructions).toBeVisible({ timeout: 10_000 });
+    await expect(this.otpInput).toBeVisible({ timeout: 10_000 });
+    await expect(this.resendCodeButton).toBeVisible({ timeout: 10_000 });
+    await expect(this.verifyCodeButton).toBeVisible({ timeout: 10_000 });
+  }
+
+  async expectCodeSentToast() {
+    await expect(this.codeSentToast).toBeVisible({ timeout: 10_000 });
+  }
+
+  async expectCodeDoesNotMatchToast() {
+    await expect(this.codeDoesNotMatchToast).toBeVisible({ timeout: 10_000 });
+  }
+
+  async expectPasswordMasked() {
+    await expect(this.password).toHaveAttribute('type', 'password');
+  }
+
+  async expectPasswordVisible() {
+    await expect(this.password).toHaveAttribute('type', 'text');
+  }
+
+  async expectConfirmPasswordMasked() {
+    await expect(this.confirmPassword).toHaveAttribute('type', 'password');
+  }
+
+  async expectConfirmPasswordVisible() {
+    await expect(this.confirmPassword).toHaveAttribute('type', 'text');
+  }
+
+  /** Checks the five strength-rule errors that appear for a weak password. */
+  async expectPasswordStrengthErrors() {
+    await expect(this.page.getByText('Must contain at least 1 number!')).toBeVisible({ timeout: 10_000 });
+    await expect(this.page.getByText('Must contain at least 1 in Capital Case!')).toBeVisible({ timeout: 10_000 });
+    await expect(this.page.getByText('Must contain at least 1 Letter in Small Case!')).toBeVisible({ timeout: 10_000 });
+    await expect(this.page.getByText('Must contain at least 1 Special Character!')).toBeVisible({ timeout: 10_000 });
+    await expect(this.page.getByText('Must be at least 8 characters long')).toBeVisible({ timeout: 10_000 });
+  }
+
+  async expectCountryDialogOpen() {
+    await expect(this.countryDialog).toBeVisible({ timeout: 10_000 });
   }
 }
