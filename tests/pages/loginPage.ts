@@ -33,7 +33,7 @@ export class LoginPage {
     this.page = page;
     this.heading = page.getByRole('heading', { name: 'Login' });
     this.methodsHeading = page.getByRole('heading', { name: 'Choose one of the following methods:' });
-    this.email = page.getByPlaceholder('Email');
+    this.email = this.email = page.getByTestId('email-input-field').getByPlaceholder('Email');
     this.password = page.getByPlaceholder('Choose a password');
     this.passwordToggle = page.locator('password-input').getByRole('img');
     this.passwordNativeInput = page.locator('password-input input');

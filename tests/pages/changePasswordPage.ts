@@ -3,49 +3,49 @@ import type { Page, Locator } from '@playwright/test';
 
 /**
  * The "Reset your password" screen (/change-password): the user enters the code
- * emailed to them plus a new password (twice). A wrong code surfaces an inline
- * error and a "Request another code" link; the "Still need help? - Contact us"
- * link opens the shared contact-us modal.
+ * emailed to them plus a new password (twice). Submitting a wrong code navigates
+ * to /change-password-error (see ChangePasswordErrorPage). A valid code completes
+ * the reset and leaves the route. "Still need help? - Contact us" opens the
+ * shared contact-us modal.
  */
 export class ChangePasswordPage {
   readonly page: Page;
-  // Headings + header.
+  // ─── Header ───────────────────────────────────────────────────
+  /** Back arrow — uses browser history (goes to where you came from). */
   readonly backButton: Locator;
+  // ─── Headings ─────────────────────────────────────────────────
   readonly pageTitle: Locator;
   readonly heading: Locator;
-  // Inputs + primary action.
+  // ─── Inputs + primary action ──────────────────────────────────
+  /** 6-digit numeric reset code (number input). */
   readonly codeInput: Locator;
+  /** "New Password" field. */
   readonly newPasswordInput: Locator;
+  /** "Confirm Password" field. */
   readonly confirmPasswordInput: Locator;
+  /** "Reset Now" submit button — disabled until all fields are valid. */
   readonly resetNowButton: Locator;
-  // Secondary links.
+  // ─── Secondary links ──────────────────────────────────────────
+  /** Opens the shared contact-us support modal. */
   readonly contactSupportLink: Locator;
-  readonly requestAnotherCodeLink: Locator;
-  // Validation messages.
+  // ─── Validation messages ──────────────────────────────────────
   readonly codeRequiredError: Locator;
   readonly passwordRequiredError: Locator;
   readonly passwordMismatchError: Locator;
-  readonly invalidCodeError: Locator;
 
   constructor(page: Page) {
     this.page = page;
-    this.backButton = page.getByRole('button', { name: 'back' });
-    this.pageTitle = page.getByText('Reset your password');
+    this.backButton = page.locator('app-change-password').getByRole('button', { name: 'back', exact: true });
+    this.pageTitle = page.getByText('Reset your password', { exact: true });
     this.heading = page.getByRole('heading', { name: 'Enter your new password below:' });
-    this.codeInput = page.getByPlaceholder('Code');
-    // The new + confirm password fields share the "Choose a password" placeholder
-    // and are ordered new-then-confirm in the DOM.
-    this.newPasswordInput = page.getByPlaceholder('Choose a password').nth(0);
-    this.confirmPasswordInput = page.getByPlaceholder('Choose a password').nth(1);
-    this.resetNowButton = page.getByRole('button', { name: 'Reset Now' });
-    this.contactSupportLink = page.getByText('Still need help? - Contact us');
-    this.requestAnotherCodeLink = page.getByText(/Request another code/i);
+    this.codeInput = page.getByTestId('change-password-code-field').locator('input').first();
+    this.newPasswordInput = page.getByTestId('change-password-password-field').locator('input').first();
+    this.confirmPasswordInput = page.getByTestId('change-password-confirm-password-field').locator('input').first();
+    this.resetNowButton = page.getByTestId('change-password-submit-button').getByRole('button');
+    this.contactSupportLink = page.getByText('Still need help? - Contact us', { exact: true });
     this.codeRequiredError = page.getByText('Code is required!', { exact: true });
     this.passwordRequiredError = page.getByText('Password is required!', { exact: true });
     this.passwordMismatchError = page.getByText('Password confirmation does not match', { exact: true });
-    this.invalidCodeError = page.getByText(
-      /the code that you have used is invalid|expired code|code is incorrect|code expired/i,
-    );
   }
 
   // ─── Actions ───────────────────────────────────────────────────
@@ -54,7 +54,8 @@ export class ChangePasswordPage {
   }
 
   async fillCode(code: string) {
-    await this.codeInput.fill(code);
+    await this.codeInput.clear();
+    await this.codeInput.pressSequentially(code, { delay: 50 });
   }
 
   async fillNewPassword(password: string) {
@@ -86,6 +87,7 @@ export class ChangePasswordPage {
 
   // ─── Assertions ────────────────────────────────────────────────
   async expectLoaded() {
+    await expect(this.page).toHaveURL(/\/change-password$/, { timeout: 10_000 });
     await expect(this.pageTitle).toBeVisible({ timeout: 10_000 });
     await expect(this.heading).toBeVisible({ timeout: 10_000 });
     await expect(this.codeInput).toBeVisible({ timeout: 10_000 });
@@ -115,18 +117,9 @@ export class ChangePasswordPage {
     await expect(this.passwordMismatchError).toBeVisible({ timeout: 10_000 });
   }
 
-  /** The wrong-code error and the offer to request a fresh code are both shown. */
-  async expectInvalidCode() {
-    await expect(this.invalidCodeError).toBeVisible({ timeout: 10_000 });
-  }
-
-  async expectRequestAnotherCodeVisible() {
-    await expect(this.requestAnotherCodeLink).toBeVisible({ timeout: 10_000 });
-  }
-
   /** The reset succeeded: a confirmation shows and we've left the change page. */
   async expectResetSucceeded() {
-    await expect(this.page.getByText(/password.*(changed|reset|updated)|success/i)).toBeVisible({ timeout: 15_000 });
-    await expect(this.page).not.toHaveURL(/change-password/);
+    await expect(this.page.getByText(/Your password has been reset successfully, please login with your new password/i)).toBeVisible({ timeout: 15_000 });
+    await expect(this.page).toHaveURL(/login/);
   }
 }

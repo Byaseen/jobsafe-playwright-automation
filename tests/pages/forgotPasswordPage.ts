@@ -2,42 +2,54 @@ import { expect } from '@playwright/test';
 import type { Page, Locator } from '@playwright/test';
 
 /**
- * The "Forgotten password" screen (/forgot-password): the user enters their
- * email and is taken to a "Thank you!" confirmation from which they can jump to
- * change-password. The "?" banner button opens the shared contact-us modal.
+ * The "Forgotten password" screen (/forgot-password) and the "Thank you!"
+ * confirmation it transitions to (/check-email-exists). Both views are rendered
+ * by the same APP-FORGOT-PASSWORD component, so they share this page object.
+ * The "?" banner button opens the shared contact-us modal.
  */
 export class ForgotPasswordPage {
   readonly page: Page;
-  // Headings.
+  // ─── Headings ─────────────────────────────────────────────────
   readonly heading: Locator;
   readonly subheading: Locator;
-  // Inputs + actions.
+  // ─── Inputs + primary actions (forgot-password view) ──────────
+  /** Email text input — inside the ion-input custom element. */
   readonly email: Locator;
+  /** "Next" submit button — disabled until a valid email is entered. */
   readonly nextButton: Locator;
-  /** In-page "Go back to previous screen" button (returns to login). */
+  /** In-page "Go back to previous screen" button → login. */
   readonly backButton: Locator;
-  /** Header back arrow, labelled just "back". */
+  /** Header back arrow → login. */
   readonly headerBackButton: Locator;
+  /** "?" header icon that opens the contact-us modal. */
   readonly helpButton: Locator;
-  // Validation messages.
+  // ─── Validation messages ──────────────────────────────────────
   readonly emailRequiredError: Locator;
   readonly emailInvalidError: Locator;
-  // "Thank you!" confirmation page.
+  // ─── "Thank you!" confirmation view (/check-email-exists) ─────
+  /** "Thank you!" h1. */
   readonly thankYouHeading: Locator;
+  /** "We have received your request" h2. */
+  readonly thankYouSubheading: Locator;
+  /** "No Email received? - Contact us" link on the thank-you screen. */
+  readonly noEmailReceivedLink: Locator;
+  /** "Change Password" button on the thank-you screen → /change-password. */
   readonly changePasswordButton: Locator;
 
   constructor(page: Page) {
     this.page = page;
-    this.heading = page.getByRole('heading', { name: 'Forgotten password' });
-    this.subheading = page.getByRole('heading', { name: 'Simply provide us with your Email:' });
-    this.email = page.getByPlaceholder('Email');
-    this.nextButton = page.getByRole('button', { name: 'Next' });
-    this.backButton = page.getByRole('button', { name: 'Go back to previous screen' });
+    this.heading = page.getByText('Forgotten password', { exact: true });
+    this.subheading = page.getByText('Simply provide us with your Email:', { exact: true });
+    this.email = page.getByTestId('forgot-password-email-field').locator('input');
+    this.nextButton = page.getByTestId('reset-password-button').getByRole('button');
+    this.backButton = page.getByTestId('forgot-password-back-button').getByRole('button');
     this.headerBackButton = page.getByRole('button', { name: 'back', exact: true });
-    this.helpButton = page.getByRole('banner').getByRole('button');
+    this.helpButton = page.getByTestId('header-help-button').getByRole('button');
     this.emailRequiredError = page.getByText('Email is required!');
     this.emailInvalidError = page.getByText('Email is invalid!');
-    this.thankYouHeading = page.getByRole('heading', { name: 'Thank you!' });
+    this.thankYouHeading = page.getByText('Thank you!', { exact: true });
+    this.thankYouSubheading = page.getByText('We have received your request', { exact: true });
+    this.noEmailReceivedLink = page.getByText('No Email received? - Contact us', { exact: true });
     this.changePasswordButton = page.getByRole('button', { name: 'Change Password' });
   }
 
@@ -53,7 +65,7 @@ export class ForgotPasswordPage {
   /** Focus then blur the email field, to trigger the required-field validation. */
   async blurEmail() {
     await this.email.focus();
-    await this.email.press('Tab');
+    await this.page.keyboard.press('Tab');
   }
 
   async clickNext() {
@@ -70,8 +82,16 @@ export class ForgotPasswordPage {
     await this.backButton.click();
   }
 
+  async clickHeaderBack() {
+    await this.headerBackButton.click();
+  }
+
   async clickChangePassword() {
     await this.changePasswordButton.click();
+  }
+
+  async clickNoEmailReceived() {
+    await this.noEmailReceivedLink.click();
   }
 
   async openHelp() {
@@ -114,9 +134,18 @@ export class ForgotPasswordPage {
     await expect(this.emailRequiredError).not.toBeVisible({ timeout: 10_000 });
   }
 
-  /** Reached the "Thank you!" confirmation after submitting a valid email. */
+  /** Reached the "Thank you!" confirmation (quick gate check). */
   async expectReachedThankYou() {
     await expect(this.page).toHaveURL(/check-email-exists/, { timeout: 15_000 });
     await expect(this.thankYouHeading).toBeVisible({ timeout: 10_000 });
+  }
+
+  /** Full structural check of the "Thank you!" confirmation screen. */
+  async expectThankYouFullyLoaded() {
+    await expect(this.page).toHaveURL(/check-email-exists/, { timeout: 15_000 });
+    await expect(this.thankYouHeading).toBeVisible({ timeout: 10_000 });
+    await expect(this.thankYouSubheading).toBeVisible({ timeout: 10_000 });
+    await expect(this.noEmailReceivedLink).toBeVisible({ timeout: 10_000 });
+    await expect(this.changePasswordButton).toBeVisible({ timeout: 10_000 });
   }
 }
