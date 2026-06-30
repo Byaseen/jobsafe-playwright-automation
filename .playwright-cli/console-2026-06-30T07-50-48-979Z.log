@@ -1,0 +1,3 @@
+[    1179ms] [LOG] User general data in app component:  0 @ https://app.tst.jobsafe.cloud/chunk-UKFWISDB.js:1
+[    1180ms] [LOG] [BurgerMenu] Adding departments item, url: /app/settings/departments @ https://app.tst.jobsafe.cloud/chunk-UKFWISDB.js:1
+[    1275ms] [ERROR] [Ionic Error]: [ion-menu] - Must have a "content" element to listen for drag events on. @ https://app.tst.jobsafe.cloud/chunk-CZXJOQCR.js:0

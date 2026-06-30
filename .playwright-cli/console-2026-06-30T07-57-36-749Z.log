@@ -1,0 +1,8 @@
+[     542ms] [LOG] User general data in app component:  0 @ http://localhost:4200/chunk-2IVHFAYU.js:1134
+[     543ms] [LOG] [BurgerMenu] Adding departments item, url: /app/settings/departments @ http://localhost:4200/chunk-2IVHFAYU.js:790
+[     561ms] [LOG] Angular is running in development mode. @ http://localhost:4200/@fs/Users/yaseen/Desktop/Jobmate/pwa-jobsafe/.angular/cache/20.3.25/app/vite/deps/chunk-OV2SWNMK.js?v=04652e0c:11971
+[     593ms] [ERROR] [Ionic Error]: [ion-menu] - Must have a "content" element to listen for drag events on. @ http://localhost:4200/@fs/Users/yaseen/Desktop/Jobmate/pwa-jobsafe/.angular/cache/20.3.25/app/vite/deps/chunk-DJ2VIEVB.js?v=04652e0c:79
+[   62965ms] [ERROR] Access to XMLHttpRequest at 'https://app.tst.jobsafe.cloud/apiv1/profile/VerifyEmailWithCode' from origin 'http://localhost:4200' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource. @ http://localhost:4200/signup-trial:0
+[   62968ms] [ERROR] Failed to load resource: net::ERR_FAILED @ https://app.tst.jobsafe.cloud/apiv1/profile/VerifyEmailWithCode:0
+[   63249ms] [ERROR] Access to XMLHttpRequest at 'https://app.tst.jobsafe.cloud/apiv1/profile/VerifyEmailWithCode' from origin 'http://localhost:4200' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource. @ http://localhost:4200/signup-trial:0
+[   63254ms] [ERROR] Failed to load resource: net::ERR_FAILED @ https://app.tst.jobsafe.cloud/apiv1/profile/VerifyEmailWithCode:0

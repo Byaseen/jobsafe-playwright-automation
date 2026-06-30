@@ -1,0 +1,26 @@
+- generic [ref=e2]:
+  - generic [ref=e4]:
+    - button "back" [ref=e259] [cursor=pointer]:
+      - generic [ref=e260]:
+        - img:
+          - generic:
+            - img
+    - main [ref=e17]:
+      - generic [ref=e20]:
+        - generic:
+          - generic [ref=e261]:
+            - heading "Verify your email address" [level=1] [ref=e262]
+            - paragraph [ref=e263]: We've sent a 6-digit code to your email. Please enter it below to confirm your email address and complete your registration
+          - generic [ref=e264]:
+            - generic [ref=e269]:
+              - generic [ref=e270]: "6-Digit Code :"
+              - spinbutton [ref=e276]
+            - paragraph [ref=e279]: Didn’t receive a code? Resend Code
+            - button "Verify Code" [ref=e285] [cursor=pointer]:
+              - generic [ref=e287]: Verify Code
+  - generic [ref=e289]:
+    - status [ref=e290]:
+      - generic [ref=e291]: Code Sent Successfully
+    - button [ref=e293]:
+      - img [ref=e295]:
+        - img [ref=e297]

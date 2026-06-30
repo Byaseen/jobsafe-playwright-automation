@@ -1,0 +1,113 @@
+- generic [ref=e4]:
+  - button "back" [ref=e15] [cursor=pointer]:
+    - generic [ref=e16]:
+      - img:
+        - generic:
+          - img
+  - main [ref=e17]:
+    - generic [ref=e21]:
+      - generic [ref=e22]:
+        - generic [ref=e26]:
+          - generic [ref=e27]: "First Name :"
+          - textbox [ref=e32]:
+            - /placeholder: First Name
+            - text: Test
+        - generic [ref=e36]:
+          - generic [ref=e37]: "Surname :"
+          - textbox [ref=e42]:
+            - /placeholder: Surname
+            - text: User
+        - generic [ref=e47]:
+          - generic [ref=e48]: "Email address :"
+          - textbox [ref=e54]:
+            - /placeholder: Email address
+            - text: test+1782806151@example.com
+        - generic [ref=e59]:
+          - generic [ref=e60]: "Confirm email address :"
+          - textbox [ref=e66]:
+            - /placeholder: Email address
+            - text: test+1782806151@example.com
+        - generic [ref=e70]:
+          - generic [ref=e71]: "Phone Number :"
+          - textbox [ref=e76]:
+            - /placeholder: Phone Number
+            - text: "+441234567890"
+        - generic [ref=e80]:
+          - generic [ref=e81]: "Company Name :"
+          - textbox [ref=e86]:
+            - /placeholder: Company Name
+            - text: Test Company
+        - generic [ref=e91]:
+          - generic [ref=e92]: "Choose a password :"
+          - generic [ref=e95]:
+            - img [ref=e96]:
+              - img [ref=e98]
+            - textbox [ref=e104]:
+              - /placeholder: Choose a password
+              - text: P@ssw0rd123!
+        - generic [ref=e109]:
+          - generic [ref=e110]: "Confirm password :"
+          - generic [ref=e113]:
+            - img [ref=e114]:
+              - img [ref=e116]
+            - textbox [ref=e122]:
+              - /placeholder: Choose a password
+              - text: P@ssw0rd123!
+        - generic [ref=e123]:
+          - generic [ref=e128]:
+            - generic [ref=e129]: "Name on Card :"
+            - generic [ref=e130]: (Optional)
+            - textbox [ref=e136]:
+              - /placeholder: Name on Card
+          - generic [ref=e141]:
+            - generic [ref=e142]: "Card Number :"
+            - generic [ref=e143]: (Optional)
+            - textbox [ref=e149]:
+              - /placeholder: Card Number
+          - generic [ref=e154]:
+            - generic [ref=e155]: "Expiry Date (MM/YYYY) :"
+            - generic [ref=e156]: (Optional)
+            - textbox [ref=e162]:
+              - /placeholder: Expiry Date (MM/YYYY)
+          - generic [ref=e167]:
+            - generic [ref=e168]: "Card Verification Value (CVV) :"
+            - generic [ref=e169]: (Optional)
+            - textbox [ref=e175]:
+              - /placeholder: Card Verification Value (CVV)
+      - generic [ref=e180]:
+        - generic [ref=e181]: "Country :"
+        - generic [ref=e183]:
+          - generic:
+            - img:
+              - generic:
+                - img
+            - paragraph: United Kingdom
+          - button [ref=e184] [cursor=pointer]:
+            - img [ref=e185]:
+              - img [ref=e187]
+      - generic [ref=e192]:
+        - img [ref=e193]:
+          - img [ref=e195]
+        - generic [ref=e197]: Please select your country. Your country denotes the default currency of operation of your account.
+      - generic [ref=e201]:
+        - img [ref=e202]:
+          - img [ref=e204]
+        - generic [ref=e206]: Jobmate Ltd respects your privacy and will not share your personal data with any third parties.
+      - generic [ref=e215] [cursor=pointer]:
+        - switch [checked] [active] [ref=e216]
+        - generic [ref=e225]:
+          - text: I agree to the
+          - link "Terms & Conditions" [ref=e226]:
+            - /url: https://jobsafe.cloud/terms-and-conditions/
+      - iframe [ref=e233]:
+        - generic [active] [ref=f1e1]:
+          - generic [ref=f1e2]: This reCAPTCHA is for testing purposes only. Please report to the site admin if you are seeing this.
+          - generic [ref=f1e3]:
+            - generic [ref=f1e4]:
+              - checkbox "I'm not a robot" [ref=f1e8]
+              - generic [ref=f1e12]: I'm not a robot
+            - generic [ref=f1e16]: reCAPTCHA
+      - button "Register & start your FREE trial" [ref=e239] [cursor=pointer]:
+        - generic [ref=e241]: Register & start your FREE trial
+      - button "Go back to previous screen" [ref=e247] [cursor=pointer]:
+        - generic [ref=e249]: Go back to previous screen

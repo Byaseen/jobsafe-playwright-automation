@@ -1,0 +1,4 @@
+[  232653ms] [LOG] User general data in app component:  0 @ https://app.tst.jobsafe.cloud/chunk-UKFWISDB.js:1
+[  232654ms] [LOG] [BurgerMenu] Adding departments item, url: /app/settings/departments @ https://app.tst.jobsafe.cloud/chunk-UKFWISDB.js:1
+[  232726ms] [ERROR] [Ionic Error]: [ion-menu] - Must have a "content" element to listen for drag events on. @ https://app.tst.jobsafe.cloud/chunk-CZXJOQCR.js:0
+[  232858ms] Unexpected token ':'

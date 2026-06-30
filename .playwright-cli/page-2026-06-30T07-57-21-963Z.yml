@@ -1,0 +1,138 @@
+- generic [ref=e3]:
+  - generic:
+    - generic:
+      - generic:
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - generic:
+                          - generic:
+                            - generic:
+                              - generic [active]:
+                                - button "back":
+                                  - generic:
+                                    - img:
+                                      - generic:
+                                        - img
+      - main:
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - generic:
+                  - heading "Verify your email address" [level=1]
+                  - paragraph: We've sent a 6-digit code to your email. Please enter it below to confirm your email address and complete your registration
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - generic:
+                          - generic:
+                            - generic:
+                              - generic:
+                                - generic: "6-Digit Code :"
+                                - generic:
+                                  - generic:
+                                    - generic:
+                                      - generic:
+                                        - generic:
+                                          - spinbutton
+                  - generic:
+                    - generic:
+                      - generic:
+                        - generic:
+                          - paragraph: Didn’t receive a code? Resend Code
+                  - generic:
+                    - generic:
+                      - generic:
+                        - generic:
+                          - generic:
+                            - generic:
+                              - generic:
+                                - button "Verify Code":
+                                  - generic:
+                                    - generic:
+                                      - generic: Verify Code
+    - generic:
+      - main:
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - generic:
+                          - heading "Login" [level=1]
+                          - heading "Choose one of the following methods:" [level=2]
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - generic:
+                          - generic:
+                            - generic:
+                              - generic:
+                                - generic: "Email :"
+                                - generic:
+                                  - generic:
+                                    - generic:
+                                      - generic:
+                                        - textbox:
+                                          - /placeholder: Email
+                  - generic:
+                    - generic:
+                      - generic:
+                        - generic:
+                          - generic:
+                            - generic:
+                              - generic:
+                                - generic: "Password :"
+                                - generic:
+                                  - generic:
+                                    - generic:
+                                      - img:
+                                        - generic:
+                                          - img
+                                      - generic:
+                                        - generic:
+                                          - generic:
+                                            - textbox:
+                                              - /placeholder: Choose a password
+                  - generic:
+                    - generic:
+                      - generic:
+                        - generic:
+                          - generic:
+                            - generic:
+                              - generic:
+                                - button "Login" [disabled]:
+                                  - generic:
+                                    - generic:
+                                      - generic: Login
+                          - link "Forgot Password?":
+                            - /url: /forgot-password
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - generic:
+                          - generic:
+                            - generic: or
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - generic:
+                          - generic:
+                            - generic:
+                              - button "No Account? Create an account":
+                                - generic:
+                                  - generic:
+                                    - generic: No Account? Create an account
