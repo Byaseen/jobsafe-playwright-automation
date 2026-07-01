@@ -128,7 +128,7 @@ test.describe('JobSafe web — Signup trial', () => {
       await signup.expectCodeDoesNotMatchToast();
     });
 
-    test('submitting an incorrect OTP shows a "Invalid verification code" error', async ({ page }) => {
+    test('submitting an invalid OTP shows a "Invalid verification code" error', async ({ page }) => {
       const signup = new SignupTrialPage(page);
       await signup.fillOtpCode('123');
       await signup.clickVerifyCode();

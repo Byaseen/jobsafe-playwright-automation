@@ -122,6 +122,7 @@ export class IncidentReportsPage {
   // ─── Assertions ────────────────────────────────────────────────
 
   async expectLoaded(timeout = 20_000) {
+    await this.page.waitForTimeout(1000); 
     await expect(this.page).toHaveURL(/incident-reports/, { timeout });
     await expect(this.reportsTable).toBeVisible({ timeout });
   }
