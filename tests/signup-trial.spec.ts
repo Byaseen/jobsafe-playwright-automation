@@ -11,6 +11,7 @@ import {
   invalidEmailSignup,
   usedEmailSignup,
 } from './utils/test-data';
+import { LoginPage } from './pages/loginPage';
 
 test.describe('JobSafe web — Signup trial', () => {
   test.beforeEach(async ({ page }) => {
@@ -104,10 +105,12 @@ test.describe('JobSafe web — Signup trial', () => {
 
   test.describe('Email Verification screen', () => {
     // Each test reaches the verify screen by completing a fresh signup.
+    const validData = validSignup();
+
     test.beforeEach(async ({ page }) => {
       const signup = new SignupTrialPage(page);
       await signup.goto();
-      await signup.register(validSignup());
+      await signup.register(validData);
       await signup.expectVerifyEmailScreen();
     });
 
@@ -133,8 +136,17 @@ test.describe('JobSafe web — Signup trial', () => {
       await signup.fillOtpCode('123');
       await signup.clickVerifyCode();
       await signup.expectInvalidCodeError();
+      await signup.fillOtpCode('');
     });
 
+    test('submitting a valid OTP shows a "Code verified successfully" toast', async ({ page }) => {
+      const signup = new SignupTrialPage(page);
+      const login = new LoginPage(page);
+      await expect(signup.otpInput).toHaveValue(/^\d{6}$/, { timeout: 200_000 });
+      await signup.clickVerifyCode();    
+      await login.expectReachedHome();
+    });
+    
     test('back arrow on the verify screen navigates to the login page', async ({ page }) => {
       const signup = new SignupTrialPage(page);
       await signup.clickBack();
