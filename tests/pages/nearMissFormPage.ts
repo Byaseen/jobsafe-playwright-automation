@@ -370,10 +370,10 @@ export class NearMissFormPage {
   }
 
   async expectSavedToReportListWithValidStatusAndType(title: string, status: string, type: string , page: Page) {
-      const ir = new IncidentReportsPage(page);
-      const row = ir.getRow(title);
-      await expect(row.getByText(type)).toBeVisible({ timeout: 10_000 });
-      await expect(row.getByText(status)).toBeVisible({ timeout: 10_000 });
+    const ir = new IncidentReportsPage(page);
+    const row = ir.getRow(title);
+    await expect(row.getByText(type)).toBeVisible({ timeout: 10_000 });
+    await expect(row.getByText(status)).toBeVisible({ timeout: 10_000 });
   }
 
   /** Returns true when the consent checkbox div has a green background (checked). */
