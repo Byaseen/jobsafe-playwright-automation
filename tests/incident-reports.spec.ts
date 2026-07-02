@@ -356,7 +356,7 @@ test.describe('JobSafe web — Incident Reports list', () => {
       await ir.clearFilter();
       await ir.expectFilterPanelHidden();
       await expect(ir.reportsTable).toBeVisible();
-      await ir.expectRowsOfType('Draft', 'Pending');
+      await ir.expectRowsOfType('Draft', 'Pending' , 'In review', 'Archived', 'Resolved', 'Excluded');
     });
 
     test('"Clear filter" closes the filter panel', async ({ page }) => {
