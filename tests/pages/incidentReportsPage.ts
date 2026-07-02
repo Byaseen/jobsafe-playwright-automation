@@ -7,6 +7,9 @@ import type { Page, Locator } from '@playwright/test';
  */
 export type TypeFilterKey = 'hsseReport' | 'customerIncidentReport' | 'nearMissReport' | 'otherReport';
 
+/** Status chip keys used in the filter panel — match the data-testid suffix. */
+export type StatusFilterKey = 'draft' | 'pending' | 'in review' | 'archived' | 'resolved' | 'excluded';
+
 /**
  * The Incident Reports list (/app/settings/incident-reports).
  *
@@ -120,6 +123,11 @@ export class IncidentReportsPage {
     return this.filterPanel.getByTestId(`filter-option-${key}`);
   }
 
+  /** Returns the status chip locator by its DOM key. */
+  filterStatusChip(key: StatusFilterKey): Locator {
+    return this.filterPanel.getByTestId(`filter-option-${key}`);
+  }
+
   async openAddReportModal() {
     await this.addFab.click();
   }
@@ -173,6 +181,14 @@ export class IncidentReportsPage {
 
   async expectFilterChipDeselected(key: TypeFilterKey) {
     await expect(this.filterTypeChip(key)).not.toHaveClass(/selected/);
+  }
+
+  async expectStatusFilterChipSelected(key: StatusFilterKey) {
+    await expect(this.filterStatusChip(key)).toHaveClass(/selected/);
+  }
+
+  async expectStatusFilterChipDeselected(key: StatusFilterKey) {
+    await expect(this.filterStatusChip(key)).not.toHaveClass(/selected/);
   }
 
   /**

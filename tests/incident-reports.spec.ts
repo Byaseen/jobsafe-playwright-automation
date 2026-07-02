@@ -246,6 +246,148 @@ test.describe('JobSafe web — Incident Reports list', () => {
     });
   });
 
+  // ─── Status filter ────────────────────────────────────────────
+
+  test.describe('Status filter', () => {
+    // ── Status filter results ────────────────────────────────────
+
+    test('filtering by "Draft" shows only Draft reports or empty state', async ({ page }) => {
+      const ir = new IncidentReportsPage(page);
+      await ir.openFilterPanel();
+      await ir.filterStatusButton('Draft').click();
+      await ir.applyFilter();
+      await ir.expectFilterPanelHidden();
+      await ir.expectRowsOfType('Draft');
+    });
+
+    test('filtering by "Pending" shows only Pending reports or empty state', async ({ page }) => {
+      const ir = new IncidentReportsPage(page);
+      await ir.openFilterPanel();
+      await ir.filterStatusButton('Pending').click();
+      await ir.applyFilter();
+      await ir.expectFilterPanelHidden();
+      await ir.expectRowsOfType('Pending');
+    });
+
+    test('filtering by "In review" shows only In review reports or empty state', async ({ page }) => {
+      const ir = new IncidentReportsPage(page);
+      await ir.openFilterPanel();
+      await ir.filterStatusButton('In review').click();
+      await ir.applyFilter();
+      await ir.expectFilterPanelHidden();
+      await ir.expectRowsOfType('In review');
+    });
+
+    test('filtering by "Archived" shows only Archived reports or empty state', async ({ page }) => {
+      const ir = new IncidentReportsPage(page);
+      await ir.openFilterPanel();
+      await ir.filterStatusButton('Archived').click();
+      await ir.applyFilter();
+      await ir.expectFilterPanelHidden();
+      await ir.expectRowsOfType('Archived');
+    });
+
+    test('filtering by "Resolved" shows only Resolved reports or empty state', async ({ page }) => {
+      const ir = new IncidentReportsPage(page);
+      await ir.openFilterPanel();
+      await ir.filterStatusButton('Resolved').click();
+      await ir.applyFilter();
+      await ir.expectFilterPanelHidden();
+      await ir.expectRowsOfType('Resolved');
+    });
+
+    test('filtering by "Excluded" shows only Excluded reports or empty state', async ({ page }) => {
+      const ir = new IncidentReportsPage(page);
+      await ir.openFilterPanel();
+      await ir.filterStatusButton('Excluded').click();
+      await ir.applyFilter();
+      await ir.expectFilterPanelHidden();
+      await ir.expectRowsOfType('Excluded');
+    });
+
+    // ── Chip selection state ─────────────────────────────────────
+
+    test('selecting a status chip marks it as selected', async ({ page }) => {
+      const ir = new IncidentReportsPage(page);
+      await ir.openFilterPanel();
+      await ir.filterStatusButton('Pending').click();
+      await ir.expectStatusFilterChipSelected('pending');
+    });
+
+    test('clicking a selected status chip deselects it', async ({ page }) => {
+      const ir = new IncidentReportsPage(page);
+      await ir.openFilterPanel();
+      await ir.filterStatusButton('Pending').click();
+      await ir.expectStatusFilterChipSelected('pending');
+      await ir.filterStatusButton('Pending').click();
+      await ir.expectStatusFilterChipDeselected('pending');
+    });
+
+    test('multiple status chips can be selected simultaneously', async ({ page }) => {
+      const ir = new IncidentReportsPage(page);
+      await ir.openFilterPanel();
+      await ir.filterStatusButton('Draft').click();
+      await ir.filterStatusButton('Pending').click();
+      await ir.expectStatusFilterChipSelected('draft');
+      await ir.expectStatusFilterChipSelected('pending');
+    });
+
+    // ── Multi-status filter ──────────────────────────────────────
+
+    test('filtering by multiple statuses shows reports matching any selected status', async ({ page }) => {
+      const ir = new IncidentReportsPage(page);
+      await ir.openFilterPanel();
+      await ir.filterStatusButton('Draft').click();
+      await ir.filterStatusButton('Pending').click();
+      await ir.applyFilter();
+      await ir.expectFilterPanelHidden();
+      await ir.expectRowsOfType('Draft', 'Pending');
+    });
+
+    // ── Clear filter ─────────────────────────────────────────────
+
+    test('"Clear filter" resets the status filter and restores all reports', async ({ page }) => {
+      const ir = new IncidentReportsPage(page);
+      await ir.openFilterPanel();
+      await ir.filterStatusButton('Archived').click();
+      await ir.applyFilter();
+      await ir.expectNoReports();
+      await ir.openFilterPanel();
+      await ir.clearFilter();
+      await ir.expectFilterPanelHidden();
+      await expect(ir.reportsTable).toBeVisible();
+      await ir.expectRowsOfType('Draft', 'Pending');
+    });
+
+    test('"Clear filter" closes the filter panel', async ({ page }) => {
+      const ir = new IncidentReportsPage(page);
+      await ir.openFilterPanel();
+      await ir.expectFilterPanelVisible();
+      await ir.filterStatusButton('Draft').click();
+      await ir.clearFilter();
+      await ir.expectFilterPanelHidden();
+    });
+
+    // ── Close-without-apply ──────────────────────────────────────
+
+    test('closing the panel via X without applying does not change the report list', async ({ page }) => {
+      const ir = new IncidentReportsPage(page);
+      // Establish a known filter state: Pending applied
+      await ir.openFilterPanel();
+      await ir.filterStatusButton('Pending').click();
+      await ir.applyFilter();
+      await ir.expectFilterPanelHidden();
+      await ir.expectRowsOfType('Pending');
+      // Open panel, select Draft but close without applying
+      await ir.openFilterPanel();
+      await ir.filterStatusButton('Draft').click();
+      await ir.closeFilterPanel();
+      await ir.expectFilterPanelHidden();
+      // Table should still show only Pending rows (previous applied filter unchanged)
+      await ir.expectRowsOfType('Pending');
+    });
+  });
+
   // ─── Add New + report-type modal ──────────────────────────────
 
   test('"Add New" button opens the report type selection modal', async ({ page }) => {
