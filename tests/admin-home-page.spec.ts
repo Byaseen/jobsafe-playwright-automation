@@ -92,6 +92,13 @@ test.describe('JobSafe web — Home page', () => {
     await home.expectSidebarItems();
   });
 
+  test('sidebar menu closes when clicking the close button', async ({ page }) => {
+    const home = new HomePage(page);
+    await home.openSidebar();
+    await home.closeSidebar();
+    await expect(home.menuButton).toBeVisible({ timeout: 10_000 });
+  });
+
   test('verify logout functionality', async ({ page }) => {
     const home = new HomePage(page);
     const login = new LoginPage(page);
