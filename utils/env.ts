@@ -10,6 +10,9 @@ export const env = {
   homeUrl: `${appOrigin}/app/home`,
   incidentReportsUrl: `${appOrigin}/app/settings/incident-reports`,
   email: process.env.USER_EMAIL!,
-  password: process.env.USER_PASSWORD!
+  password: process.env.USER_PASSWORD!,
+  firstName: process.env.USER_FIRST_NAME!,
+  surname: process.env.USER_SURE_NAME!,
+  newPassword: process.env.USER_NEW_PASSWORD!,
 };
 
