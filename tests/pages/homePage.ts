@@ -120,6 +120,10 @@ export class HomePage {
     await this.documentsTab.click();
   }
 
+  async clickLogout() {
+    await this.logoutButton.click();
+  }
+
   async openSidebar() {
     await this.menuButton.click();
   }

@@ -92,6 +92,15 @@ test.describe('JobSafe web — Home page', () => {
     await home.expectSidebarItems();
   });
 
+  test('verify logout functionality', async ({ page }) => {
+    const home = new HomePage(page);
+    const login = new LoginPage(page);
+    await home.openSidebar();
+    await home.clickLogout();
+    await expect(page).toHaveURL(/login/);
+    await login.expectLoaded();
+  });
+
   test('"Support / Contact" in the sidebar opens the contact-us modal', async ({ page }) => {
     const home = new HomePage(page);
     await home.openSupportModal();
