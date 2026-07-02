@@ -92,6 +92,13 @@ test.describe('JobSafe web — Home page', () => {
     await home.expectSidebarItems();
   });
 
+  test('verify logged in user name is displayed in the sidebar', async ({ page }) => {
+    const userName = `${env.firstName} ${env.surname}`;
+    const home = new HomePage(page);
+    await home.openSidebar();
+    await expect(page.getByRole('heading', { name: userName })).toBeVisible();
+  });
+
   test('sidebar menu closes when clicking the close button', async ({ page }) => {
     const home = new HomePage(page);
     await home.openSidebar();
