@@ -12,6 +12,8 @@ import {
   usedEmailSignup,
 } from './utils/test-data';
 import { LoginPage } from './pages/loginPage';
+import { HomePage } from './pages/homePage';
+import { env } from '../utils/env';
 
 test.describe('JobSafe web — Signup trial', () => {
   test.beforeEach(async ({ page }) => {
@@ -139,12 +141,24 @@ test.describe('JobSafe web — Signup trial', () => {
       await signup.fillOtpCode('');
     });
 
-    test('submitting a valid OTP shows a "Code verified successfully" toast', async ({ page }) => {
+    test('submitting a valid OTP', async ({ page }) => {
       const signup = new SignupTrialPage(page);
       const login = new LoginPage(page);
-      await expect(signup.otpInput).toHaveValue(/^\d{6}$/, { timeout: 200_000 });
-      await signup.clickVerifyCode();    
-      await login.expectReachedHome();
+
+      await test.step('fill the OTP input with the correct code navigate the user to the home page', async () => {
+        await expect(signup.otpInput).toHaveValue(/^\d{6}$/, { timeout: 200_000 });
+        await signup.clickVerifyCode();
+        await login.expectReachedHome();
+      });
+
+      await test.step('the user can log in with the same credentials after verifying their email', async () => {
+        const home = new HomePage(page);
+        await home.openSidebar();
+        await home.clickLogout();
+        await expect(page).toHaveURL(/login/);
+        await login.login(validData.email, validData.password);
+        await login.expectReachedHome();
+      });
     });
     
     test('back arrow on the verify screen navigates to the login page', async ({ page }) => {
