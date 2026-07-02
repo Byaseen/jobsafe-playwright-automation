@@ -121,6 +121,131 @@ test.describe('JobSafe web — Incident Reports list', () => {
     await new ContactUsModal(page).expectOpen();
   });
 
+  // ─── Report Type filter ────────────────────────────────────────
+
+  test.describe('Report Type filter', () => {
+    // ── Type filter results ──────────────────────────────────────
+
+    test('filtering by "Near Miss" shows only Near Miss reports or empty state', async ({ page }) => {
+      const ir = new IncidentReportsPage(page);
+      await ir.openFilterPanel();
+      await ir.filterTypeButton('Near Miss').click();
+      await ir.applyFilter();
+      await ir.expectFilterPanelHidden();
+      await ir.expectRowsOfType('Near Miss');
+    });
+
+    test('filtering by "HSSE Report" shows only HSSE reports or empty state', async ({ page }) => {
+      const ir = new IncidentReportsPage(page);
+      await ir.openFilterPanel();
+      await ir.filterTypeButton('HSSE Report').click();
+      await ir.applyFilter();
+      await ir.expectFilterPanelHidden();
+      await ir.expectRowsOfType('HSSE Report');
+    });
+
+    test('filtering by "Incident Report" shows only Incident reports or empty state', async ({ page }) => {
+      const ir = new IncidentReportsPage(page);
+      await ir.openFilterPanel();
+      await ir.filterTypeButton('Incident Report').click();
+      await ir.applyFilter();
+      await ir.expectFilterPanelHidden();
+      await ir.expectRowsOfType('Incident Report');
+    });
+
+    test('filtering by "Other" shows only Other reports or empty state', async ({ page }) => {
+      const ir = new IncidentReportsPage(page);
+      await ir.openFilterPanel();
+      await ir.filterTypeButton('Other').click();
+      await ir.applyFilter();
+      await ir.expectFilterPanelHidden();
+      await ir.expectRowsOfType('Other');
+    });
+
+    // ── Chip selection state ─────────────────────────────────────
+
+    test('selecting a type chip marks it as selected', async ({ page }) => {
+      const ir = new IncidentReportsPage(page);
+      await ir.openFilterPanel();
+      await ir.filterTypeButton('Near Miss').click();
+      await ir.expectFilterChipSelected('nearMissReport');
+    });
+
+    test('clicking a selected type chip deselects it', async ({ page }) => {
+      const ir = new IncidentReportsPage(page);
+      await ir.openFilterPanel();
+      await ir.filterTypeButton('Near Miss').click();
+      await ir.expectFilterChipSelected('nearMissReport');
+      await ir.filterTypeButton('Near Miss').click();
+      await ir.expectFilterChipDeselected('nearMissReport');
+    });
+
+    test('multiple type chips can be selected simultaneously', async ({ page }) => {
+      const ir = new IncidentReportsPage(page);
+      await ir.openFilterPanel();
+      await ir.filterTypeButton('Near Miss').click();
+      await ir.filterTypeButton('HSSE Report').click();
+      await ir.expectFilterChipSelected('nearMissReport');
+      await ir.expectFilterChipSelected('hsseReport');
+    });
+
+    // ── Multi-type filter ────────────────────────────────────────
+
+    test('filtering by multiple types shows reports matching any selected type', async ({ page }) => {
+      const ir = new IncidentReportsPage(page);
+      await ir.openFilterPanel();
+      await ir.filterTypeButton('Near Miss').click();
+      await ir.filterTypeButton('HSSE Report').click();
+      await ir.applyFilter();
+      await ir.expectFilterPanelHidden();
+      await ir.expectRowsOfType('Near Miss', 'HSSE Report');
+    });
+
+    // ── Clear filter ─────────────────────────────────────────────
+
+    test('"Clear filter" resets the filter and restores all reports', async ({ page }) => {
+      const ir = new IncidentReportsPage(page);
+      // Apply a filter that hides all reports
+      await ir.openFilterPanel();
+      await ir.filterTypeButton('HSSE Report').click();
+      await ir.applyFilter();
+      await ir.expectNoReports();
+      // Reopen panel and clear
+      await ir.openFilterPanel();
+      await ir.clearFilter();
+      await ir.expectFilterPanelHidden();
+      await expect(ir.reportsTable).toBeVisible();
+      await ir.expectRowsOfType('Near Miss','HSSE Report','Incident Report','Other');
+    });
+
+    test('"Clear filter" closes the filter panel', async ({ page }) => {
+      const ir = new IncidentReportsPage(page);
+      await ir.openFilterPanel();
+      await ir.expectFilterPanelVisible();
+      await ir.filterTypeButton('HSSE Report').click();
+      await ir.clearFilter();
+      await ir.expectFilterPanelHidden();
+    });
+
+    // ── Close-without-apply ──────────────────────────────────────
+
+    test('closing the panel via X without applying does not change the report list', async ({ page }) => {
+      const ir = new IncidentReportsPage(page);
+      // Establish a known filter state: Near Miss applied
+      await ir.openFilterPanel();
+      await ir.filterTypeButton('Near Miss').click();
+      await ir.applyFilter();
+      await ir.expectRowsOfType('Near Miss');
+      // Open panel, select HSSE but close without applying
+      await ir.openFilterPanel();
+      await ir.filterTypeButton('HSSE Report').click();
+      await ir.closeFilterPanel();
+      await ir.expectFilterPanelHidden();
+      // Table should still show Near Miss rows (previous applied filter unchanged)
+      await ir.expectRowsOfType('Near Miss');
+    });
+  });
+
   // ─── Add New + report-type modal ──────────────────────────────
 
   test('"Add New" button opens the report type selection modal', async ({ page }) => {

@@ -2,6 +2,12 @@ import { expect } from '@playwright/test';
 import type { Page, Locator } from '@playwright/test';
 
 /**
+ * Type chip keys used in the filter panel.
+ * Note: "Incident Report" maps to "customerIncidentReport" in the DOM.
+ */
+export type TypeFilterKey = 'hsseReport' | 'customerIncidentReport' | 'nearMissReport' | 'otherReport';
+
+/**
  * The Incident Reports list (/app/settings/incident-reports).
  *
  * The page has:
@@ -42,6 +48,9 @@ export class IncidentReportsPage {
   readonly archiveDialog: Locator;
   readonly archiveConfirmButton: Locator;
   readonly archiveCancelButton: Locator;
+  // ─── Filter state ─────────────────────────────────────────────
+  readonly clearFilterButton: Locator;
+  readonly noReportsMessage: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -66,6 +75,9 @@ export class IncidentReportsPage {
     this.archiveDialog = page.getByRole('dialog');
     this.archiveConfirmButton = page.getByRole('button', { name: 'Archive' });
     this.archiveCancelButton = page.getByRole('button', { name: 'Cancel' });
+    // Filter state
+    this.clearFilterButton = page.getByRole('button', { name: 'Clear filter' });
+    this.noReportsMessage = page.getByText('No reports found');
   }
 
   // ─── Actions ───────────────────────────────────────────────────
@@ -94,6 +106,18 @@ export class IncidentReportsPage {
 
   async applyFilter() {
     await this.applyFilterButton.click();
+  }
+
+  async clearFilter() {
+    await this.clearFilterButton.click();
+  }
+
+  /**
+   * Returns the type chip locator by its DOM key.
+   * Use data-testid for reliable selection-state assertions.
+   */
+  filterTypeChip(key: TypeFilterKey): Locator {
+    return this.filterPanel.getByTestId(`filter-option-${key}`);
   }
 
   async openAddReportModal() {
@@ -137,6 +161,40 @@ export class IncidentReportsPage {
 
   async expectFilterPanelHidden() {
     await expect(this.filterPanel).not.toBeVisible({ timeout: 10_000 });
+  }
+
+  async expectNoReports() {
+    await expect(this.noReportsMessage).toBeVisible({ timeout: 10_000 });
+  }
+
+  async expectFilterChipSelected(key: TypeFilterKey) {
+    await expect(this.filterTypeChip(key)).toHaveClass(/selected/);
+  }
+
+  async expectFilterChipDeselected(key: TypeFilterKey) {
+    await expect(this.filterTypeChip(key)).not.toHaveClass(/selected/);
+  }
+
+  /**
+   * Asserts every visible row/card matches at least one of the given types,
+   * or the empty state when no rows are present.
+   * Targets app-card (mobile card view) OR [mat-row] (desktop table view).
+   */
+  async expectRowsOfType(...types: string[]) {
+    const rows = this.reportsTable.locator('app-card, [mat-row]');
+    await expect(rows.first().or(this.noReportsMessage)).toBeVisible({ timeout: 10_000 });
+    const count = await rows.count();
+    if (count === 0) {
+      await this.expectNoReports();
+      return;
+    }
+    for (let i = 0; i < count; i++) {
+      const text = await rows.nth(i).textContent() ?? '';
+      expect(
+        types.some(t => text.includes(t)),
+        `Row ${i} did not match any of [${types.join(', ')}]: "${text.trim().substring(0, 100)}"`
+      ).toBe(true);
+    }
   }
 
   async expectAddReportModalOpen() {
